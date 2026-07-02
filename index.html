@@ -37,6 +37,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .nav-item.active{background:var(--bg3);color:var(--accent)}
 .nav-item svg{width:18px;height:18px;flex-shrink:0}
 .sidebar-footer{padding:16px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);line-height:1.6}
+.refresh-btn{margin-top:8px;width:100%;padding:7px 0;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:12px;cursor:pointer;transition:all .15s}
+.refresh-btn:hover{border-color:var(--accent);color:var(--accent)}
+.refresh-btn:disabled{opacity:.5;cursor:default}
 /* Main */
 .main{margin-left:220px;flex:1;padding:28px 32px;min-height:100vh}
 /* Page */
@@ -148,6 +151,7 @@ tr:hover td{background:var(--bg3)}
   </div>
   <div class="sidebar-footer">
     <div id="lastSync">最後同步：—</div>
+    <button id="refreshBtn" class="refresh-btn" onclick="refreshData()">🔄 立即更新</button>
   </div>
 </nav>
 
@@ -290,18 +294,10 @@ tr:hover td{background:var(--bg3)}
 </main>
 
 <script>
-// ── 資料（從 Notion 同步）──────────────────────────────────────
-const SYNC_TIME = "2026-06-30 13:51";
-const EXPENSES = [
-  {date:"2026-06-30",name:"買早餐",category:"餐飲",person:"Leo",amount:500},
-  {date:"2026-06-30",name:"加油",category:"交通",person:"小恩",amount:300},
-  {date:"2026-06-30",name:"生活用品",category:"購物",person:"共同",amount:100},
-  {date:"2026-06-30",name:"衣服",category:"購物",person:"Leo",amount:1200},
-  {date:"2026-06-30",name:"聚餐",category:"餐飲",person:"小恩",amount:800},
-  {date:"2026-06-30",name:"水電費",category:"住宅",person:"共同",amount:3500},
-  {date:"2026-06-30",name:"捷運",category:"交通",person:"Leo",amount:250},
-  {date:"2026-06-30",name:"買claude",category:"其他",person:"Leo",amount:600},
-];
+// ── 資料（即時從 Notion 同步，透過 Cloudflare Worker 代理）──────
+const NOTION_PROXY_URL = "https://REPLACE_WITH_YOUR_WORKER_URL.workers.dev";
+let SYNC_TIME = "—";
+let EXPENSES = [];
 // ─────────────────────────────────────────────────────────────
 
 const CAT_COLORS = {
@@ -324,16 +320,50 @@ function getMonths(){
 
 function filterByMonth(month){ return EXPENSES.filter(e => e.date.startsWith(month)); }
 
+// ── 資料載入 ─────────────────────────────────────────────────
+async function fetchExpenses(){
+  const resp = await fetch(NOTION_PROXY_URL, { cache: "no-store" });
+  if(!resp.ok) throw new Error("HTTP " + resp.status);
+  const data = await resp.json();
+  if(data.error) throw new Error(data.error);
+  return data;
+}
+
+function fmtSyncTime(iso){
+  const d = new Date(iso);
+  if(isNaN(d)) return iso;
+  const pad = n => String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+async function refreshData(){
+  const btn = document.getElementById("refreshBtn");
+  const syncEl = document.getElementById("lastSync");
+  btn.disabled = true;
+  btn.textContent = "🔄 更新中...";
+  try{
+    const data = await fetchExpenses();
+    EXPENSES = data.expenses || [];
+    SYNC_TIME = fmtSyncTime(data.syncTime);
+    syncEl.textContent = "最後同步：" + SYNC_TIME;
+
+    const months = getMonths();
+    if(!months.includes(currentMonth)) currentMonth = months[months.length - 1] || "";
+    buildMonthBar(months);
+    renderOverview();
+    renderBudget();
+  }catch(err){
+    syncEl.textContent = "同步失敗，請稍後再試";
+    console.error("Notion 同步失敗:", err);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "🔄 立即更新";
+  }
+}
+
 // ── 初始化 ───────────────────────────────────────────────────
 function init(){
-  document.getElementById("lastSync").textContent = "最後同步：" + SYNC_TIME;
-
-  const months = getMonths();
-  currentMonth = months[months.length - 1] || "";
-
-  buildMonthBar(months);
-  renderOverview();
-  renderBudget();
+  refreshData();
 }
 
 function buildMonthBar(months){
