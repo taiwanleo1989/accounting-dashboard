@@ -1,3 +1,7 @@
-name = "finance-os-notion-proxy"
+name = "accounting-dashboard"
 main = "worker/notion-proxy.js"
 compatibility_date = "2025-01-01"
+workers_dev = true
+
+[vars]
+NOTION_DATABASE_ID = "3c65d071941048ae82c50a9e795ee22b"
