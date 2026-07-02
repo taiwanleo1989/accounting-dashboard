@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance OS</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0b0f1a;
+  --bg2:#111827;
+  --bg3:#1a2236;
+  --card:#141d2e;
+  --card2:#1c2840;
+  --border:#1e2d45;
+  --text:#e8eaf0;
+  --muted:#6b7a99;
+  --accent:#00c9a7;
+  --accent2:#0ea5e9;
+  --gold:#f5a623;
+  --red:#ef4444;
+  --green:#22c55e;
+  --purple:#8b5cf6;
+  --pink:#ec4899;
+  --orange:#f97316;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+/* Sidebar */
+.sidebar{width:220px;min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;flex-shrink:0;position:fixed;top:0;left:0;height:100vh}
+.logo{padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo-icon{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#000;font-weight:700}
+.logo-text{font-size:15px;font-weight:600;color:var(--text)}
+.nav{flex:1;padding:12px 10px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:14px;margin-bottom:2px;transition:all .15s}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg3);color:var(--accent)}
+.nav-item svg{width:18px;height:18px;flex-shrink:0}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);line-height:1.6}
+/* Main */
+.main{margin-left:220px;flex:1;padding:28px 32px;min-height:100vh}
+/* Page */
+.page{display:none}
+.page.active{display:block}
+/* Page header */
+.page-header{margin-bottom:24px}
+.page-title{font-size:26px;font-weight:700;color:var(--text)}
+.page-sub{font-size:13px;color:var(--muted);margin-top:4px}
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.stat-label{font-size:12px;color:var(--muted);margin-bottom:8px}
+.stat-value{font-size:22px;font-weight:700;color:var(--text)}
+.stat-value.accent{color:var(--accent)}
+.stat-value.gold{color:var(--gold)}
+.stat-delta{font-size:11px;margin-top:4px}
+.stat-delta.up{color:var(--red)}
+.stat-delta.down{color:var(--green)}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+/* Charts row */
+.charts-row{display:grid;grid-template-columns:1fr 380px;gap:16px;margin-bottom:20px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.chart-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.chart-sub{font-size:11px;color:var(--muted);margin-bottom:16px}
+.chart-wrap{position:relative;height:220px}
+/* Legend */
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+/* Toggle */
+.toggle-group{display:flex;gap:4px;background:var(--bg3);border-radius:6px;padding:3px}
+.toggle-btn{padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .15s}
+.toggle-btn.active{background:var(--card2);color:var(--text)}
+/* Table card */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.table-title{font-size:14px;font-weight:600;color:var(--text)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:8px 12px;font-size:11px;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border)}
+td{padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg3)}
+/* Badge */
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500}
+/* Member badge */
+.badge-leo{background:rgba(14,165,233,.15);color:#38bdf8}
+.badge-xiao{background:rgba(34,197,94,.15);color:#4ade80}
+.badge-joint{background:rgba(245,166,35,.15);color:#f5a623}
+/* Category colors */
+.cat-餐飲{background:rgba(239,68,68,.15);color:#f87171}
+.cat-交通{background:rgba(14,165,233,.15);color:#38bdf8}
+.cat-購物{background:rgba(139,92,246,.15);color:#a78bfa}
+.cat-住宅{background:rgba(245,166,35,.15);color:#f5a623}
+.cat-娛樂{background:rgba(236,72,153,.15);color:#f472b6}
+.cat-醫療{background:rgba(249,115,22,.15);color:#fb923c}
+.cat-教育{background:rgba(0,201,167,.15);color:#00c9a7}
+.cat-其他{background:rgba(107,122,153,.15);color:#6b7a99}
+/* Month selector */
+.month-bar{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.month-btn{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:13px;cursor:pointer;transition:all .15s}
+.month-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,201,167,.08)}
+/* Person filter */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filter-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s}
+.filter-btn.active{border-color:var(--accent);color:var(--accent)}
+/* Donut center */
+.donut-wrap{position:relative}
+.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.donut-total{font-size:20px;font-weight:700;color:var(--text)}
+.donut-label{font-size:10px;color:var(--muted);margin-top:2px}
+/* Overview big number */
+.big-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-bottom:20px}
+.big-label{font-size:12px;color:var(--muted);margin-bottom:8px}
+.big-value{font-size:40px;font-weight:800;color:var(--text)}
+/* Scrollable table */
+.table-scroll{max-height:320px;overflow-y:auto}
+.table-scroll::-webkit-scrollbar{width:4px}
+.table-scroll::-webkit-scrollbar-track{background:transparent}
+.table-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+/* Amount color */
+.amount{font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+/* Responsive */
+@media(max-width:900px){
+  .sidebar{width:60px}
+  .logo-text,.nav-item span,.sidebar-footer{display:none}
+  .main{margin-left:60px;padding:20px 16px}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .charts-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">F</div>
+    <span class="logo-text">Finance OS</span>
+  </div>
+  <div class="nav">
+    <div class="nav-item active" onclick="showPage('overview')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>總覽</span>
+    </div>
+    <div class="nav-item" onclick="showPage('budget')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <span>記帳管理</span>
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <div id="lastSync">最後同步：—</div>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- 總覽 -->
+  <div class="page active" id="page-overview">
+    <div class="page-header">
+      <div class="page-title">總覽</div>
+      <div class="page-sub">家庭支出總覽</div>
+    </div>
+
+    <div class="stats-row" id="overview-stats">
+      <div class="stat-card">
+        <div class="stat-label">本月總支出</div>
+        <div class="stat-value accent" id="ov-month-total">—</div>
+        <div class="stat-sub" id="ov-month-count">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Leo 支出</div>
+        <div class="stat-value" id="ov-leo">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">小恩 支出</div>
+        <div class="stat-value" id="ov-xiao">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">共同支出</div>
+        <div class="stat-value gold" id="ov-joint">—</div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div class="chart-title">月度支出趨勢</div>
+          <div class="toggle-group">
+            <button class="toggle-btn active" onclick="setTrendView('month',this)">月度</button>
+            <button class="toggle-btn" onclick="setTrendView('person',this)">成員</button>
+          </div>
+        </div>
+        <div class="chart-sub">點擊柱狀圖查看明細</div>
+        <div class="chart-wrap"><canvas id="trendChart" role="img" aria-label="月度支出趨勢"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">分類佔比</div>
+        <div class="legend" id="cat-legend"></div>
+        <div class="donut-wrap">
+          <div class="chart-wrap"><canvas id="catChart" role="img" aria-label="分類支出圓餅圖"></canvas></div>
+          <div class="donut-center">
+            <div class="donut-total" id="donut-total">—</div>
+            <div class="donut-label">總計</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">最新消費</div>
+        <span style="font-size:12px;color:var(--muted)">最近 10 筆</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>日期</th><th>項目</th><th>類別</th><th>成員</th><th style="text-align:right">金額</th></tr></thead>
+          <tbody id="recent-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 記帳管理 -->
+  <div class="page" id="page-budget">
+    <div class="page-header">
+      <div class="page-title">記帳管理</div>
+      <div class="page-sub">家庭支出記錄</div>
+    </div>
+
+    <div id="month-bar" class="month-bar"></div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">所選月份總支出</div>
+        <div class="stat-value accent" id="bud-total">—</div>
+        <div class="stat-delta up" id="bud-delta"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">所選月份日均</div>
+        <div class="stat-value" id="bud-daily">—</div>
+        <div class="stat-sub" id="bud-count">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Leo</div>
+        <div class="stat-value" id="bud-leo">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">小恩 / 共同</div>
+        <div class="stat-value" id="bud-others">—</div>
+      </div>
+    </div>
+
+    <div class="charts-row" style="margin-bottom:16px">
+      <div class="chart-card">
+        <div class="chart-title">支出明細圖</div>
+        <div class="chart-sub" id="bud-chart-sub">各類別支出</div>
+        <div class="chart-wrap"><canvas id="budCatChart" role="img" aria-label="分類支出橫條圖"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">成員分配</div>
+        <div class="legend" id="person-legend"></div>
+        <div class="donut-wrap">
+          <div class="chart-wrap"><canvas id="personChart" role="img" aria-label="成員支出圓餅圖"></canvas></div>
+          <div class="donut-center">
+            <div class="donut-total" id="person-donut-total">—</div>
+            <div class="donut-label">總計</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">消費記錄</div>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="setPersonFilter('all',this)">全部</button>
+        <button class="filter-btn" onclick="setPersonFilter('Leo',this)">Leo</button>
+        <button class="filter-btn" onclick="setPersonFilter('小恩',this)">小恩</button>
+        <button class="filter-btn" onclick="setPersonFilter('共同',this)">共同</button>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>日期</th><th>項目</th><th>類別</th><th>成員</th><th style="text-align:right">金額</th></tr></thead>
+          <tbody id="bud-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── 資料（從 Notion 同步）──────────────────────────────────────
+const SYNC_TIME = "2026-06-30 13:51";
+const EXPENSES = [
+  {date:"2026-06-30",name:"買早餐",category:"餐飲",person:"Leo",amount:500},
+  {date:"2026-06-30",name:"加油",category:"交通",person:"小恩",amount:300},
+  {date:"2026-06-30",name:"生活用品",category:"購物",person:"共同",amount:100},
+  {date:"2026-06-30",name:"衣服",category:"購物",person:"Leo",amount:1200},
+  {date:"2026-06-30",name:"聚餐",category:"餐飲",person:"小恩",amount:800},
+  {date:"2026-06-30",name:"水電費",category:"住宅",person:"共同",amount:3500},
+  {date:"2026-06-30",name:"捷運",category:"交通",person:"Leo",amount:250},
+  {date:"2026-06-30",name:"買claude",category:"其他",person:"Leo",amount:600},
+];
+// ─────────────────────────────────────────────────────────────
+
+const CAT_COLORS = {
+  "餐飲":"#ef4444","交通":"#0ea5e9","購物":"#8b5cf6",
+  "住宅":"#f5a623","娛樂":"#ec4899","醫療":"#f97316",
+  "教育":"#00c9a7","其他":"#6b7a99"
+};
+const PERSON_COLORS = {"Leo":"#0ea5e9","小恩":"#22c55e","共同":"#f5a623"};
+
+let currentMonth = "";
+let currentPersonFilter = "all";
+let trendChartInst, catChartInst, budCatChartInst, personChartInst;
+
+function fmt(n){ return "NT$" + Math.round(n).toLocaleString(); }
+
+function getMonths(){
+  const months = [...new Set(EXPENSES.map(e => e.date.slice(0,7)))].sort();
+  return months;
+}
+
+function filterByMonth(month){ return EXPENSES.filter(e => e.date.startsWith(month)); }
+
+// ── 初始化 ───────────────────────────────────────────────────
+function init(){
+  document.getElementById("lastSync").textContent = "最後同步：" + SYNC_TIME;
+
+  const months = getMonths();
+  currentMonth = months[months.length - 1] || "";
+
+  buildMonthBar(months);
+  renderOverview();
+  renderBudget();
+}
+
+function buildMonthBar(months){
+  const bar = document.getElementById("month-bar");
+  bar.innerHTML = "";
+  months.forEach(m => {
+    const btn = document.createElement("button");
+    btn.className = "month-btn" + (m === currentMonth ? " active" : "");
+    btn.textContent = m.replace("-","年") + "月";
+    btn.onclick = () => {
+      currentMonth = m;
+      document.querySelectorAll(".month-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderBudget();
+    };
+    bar.appendChild(btn);
+  });
+}
+
+// ── 總覽 ─────────────────────────────────────────────────────
+function renderOverview(){
+  const month = currentMonth;
+  const data = filterByMonth(month);
+  const total = data.reduce((s,e)=>s+e.amount,0);
+  const leo = data.filter(e=>e.person==="Leo").reduce((s,e)=>s+e.amount,0);
+  const xiao = data.filter(e=>e.person==="小恩").reduce((s,e)=>s+e.amount,0);
+  const joint = data.filter(e=>e.person==="共同").reduce((s,e)=>s+e.amount,0);
+
+  document.getElementById("ov-month-total").textContent = fmt(total);
+  document.getElementById("ov-month-count").textContent = data.length + " 筆消費";
+  document.getElementById("ov-leo").textContent = fmt(leo);
+  document.getElementById("ov-xiao").textContent = fmt(xiao);
+  document.getElementById("ov-joint").textContent = fmt(joint);
+  document.getElementById("donut-total").textContent = fmt(total);
+
+  // Trend chart (monthly)
+  const months = getMonths();
+  const monthTotals = months.map(m => filterByMonth(m).reduce((s,e)=>s+e.amount,0));
+
+  if(trendChartInst) trendChartInst.destroy();
+  trendChartInst = new Chart(document.getElementById("trendChart"), {
+    type:"bar",
+    data:{
+      labels: months.map(m => m.replace("-","/")),
+      datasets:[{
+        label:"總支出",
+        data: monthTotals,
+        backgroundColor:"#00c9a7",
+        borderRadius:6,
+        barThickness:40
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99",font:{size:12}}},
+        y:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99",font:{size:11},callback:v=>"NT$"+v.toLocaleString()}}
+      }
+    }
+  });
+
+  // Category donut
+  const catMap = {};
+  data.forEach(e=>{ catMap[e.category]=(catMap[e.category]||0)+e.amount; });
+  const cats = Object.keys(catMap);
+  const catAmounts = cats.map(c=>catMap[c]);
+  const catColors = cats.map(c=>CAT_COLORS[c]||"#888");
+
+  const legend = document.getElementById("cat-legend");
+  legend.innerHTML = cats.map((c,i)=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${catColors[i]}"></div>${c} ${Math.round(catAmounts[i]/total*100)}%</div>`
+  ).join("");
+
+  if(catChartInst) catChartInst.destroy();
+  catChartInst = new Chart(document.getElementById("catChart"),{
+    type:"doughnut",
+    data:{labels:cats, datasets:[{data:catAmounts, backgroundColor:catColors, borderWidth:0, hoverBorderWidth:0}]},
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:"70%",
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`NT$${ctx.parsed.toLocaleString()}`}}}
+    }
+  });
+
+  // Recent table
+  const sorted = [...data].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
+  const tbody = document.getElementById("recent-table");
+  tbody.innerHTML = sorted.map(e=>`
+    <tr>
+      <td style="color:var(--muted)">${e.date}</td>
+      <td>${e.name}</td>
+      <td><span class="badge cat-${e.category}">${e.category}</span></td>
+      <td><span class="badge badge-${e.person==='Leo'?'leo':e.person==='小恩'?'xiao':'joint'}">${e.person}</span></td>
+      <td style="text-align:right" class="amount">${fmt(e.amount)}</td>
+    </tr>
+  `).join("");
+}
+
+let trendView = "month";
+function setTrendView(view, btn){
+  trendView = view;
+  document.querySelectorAll(".toggle-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+
+  if(view === "person"){
+    const data = filterByMonth(currentMonth);
+    const persons = ["Leo","小恩","共同"];
+    const totals = persons.map(p=>data.filter(e=>e.person===p).reduce((s,e)=>s+e.amount,0));
+    if(trendChartInst) trendChartInst.destroy();
+    trendChartInst = new Chart(document.getElementById("trendChart"),{
+      type:"bar",
+      data:{labels:persons, datasets:[{
+        data:totals,
+        backgroundColor:persons.map(p=>PERSON_COLORS[p]),
+        borderRadius:6, barThickness:50
+      }]},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99"}},
+          y:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99",callback:v=>"NT$"+v.toLocaleString()}}
+        }
+      }
+    });
+  } else {
+    renderOverview();
+  }
+}
+
+// ── 記帳管理 ─────────────────────────────────────────────────
+function renderBudget(){
+  let data = filterByMonth(currentMonth);
+  const total = data.reduce((s,e)=>s+e.amount,0);
+  const days = new Set(data.map(e=>e.date)).size || 1;
+  const leo = data.filter(e=>e.person==="Leo").reduce((s,e)=>s+e.amount,0);
+  const xiao = data.filter(e=>e.person==="小恩").reduce((s,e)=>s+e.amount,0);
+  const joint = data.filter(e=>e.person==="共同").reduce((s,e)=>s+e.amount,0);
+
+  document.getElementById("bud-total").textContent = fmt(total);
+  document.getElementById("bud-daily").textContent = fmt(total/days);
+  document.getElementById("bud-count").textContent = data.length + " 筆消費";
+  document.getElementById("bud-leo").textContent = fmt(leo);
+  document.getElementById("bud-others").textContent = fmt(xiao) + " / " + fmt(joint);
+  document.getElementById("person-donut-total").textContent = fmt(total);
+
+  // Category bar chart
+  const catMap = {};
+  data.forEach(e=>{ catMap[e.category]=(catMap[e.category]||0)+e.amount; });
+  const cats = Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
+
+  if(budCatChartInst) budCatChartInst.destroy();
+  budCatChartInst = new Chart(document.getElementById("budCatChart"),{
+    type:"bar",
+    data:{
+      labels:cats.map(c=>c[0]),
+      datasets:[{data:cats.map(c=>c[1]), backgroundColor:cats.map(c=>CAT_COLORS[c[0]]||"#888"), borderRadius:4, barThickness:24}]
+    },
+    options:{
+      indexAxis:"y", responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`NT$${ctx.parsed.x.toLocaleString()}`}}},
+      scales:{
+        x:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99",callback:v=>"NT$"+v.toLocaleString()}},
+        y:{grid:{display:false},ticks:{color:"#e8eaf0",font:{size:12}}}
+      }
+    }
+  });
+
+  // Person donut
+  const pLegend = document.getElementById("person-legend");
+  pLegend.innerHTML = [
+    {p:"Leo",v:leo},{p:"小恩",v:xiao},{p:"共同",v:joint}
+  ].map(x=>`<div class="legend-item"><div class="legend-dot" style="background:${PERSON_COLORS[x.p]}"></div>${x.p} ${total?Math.round(x.v/total*100):0}%</div>`).join("");
+
+  if(personChartInst) personChartInst.destroy();
+  personChartInst = new Chart(document.getElementById("personChart"),{
+    type:"doughnut",
+    data:{labels:["Leo","小恩","共同"], datasets:[{data:[leo,xiao,joint], backgroundColor:["#0ea5e9","#22c55e","#f5a623"], borderWidth:0}]},
+    options:{responsive:true, maintainAspectRatio:false, cutout:"70%", plugins:{legend:{display:false}}}
+  });
+
+  // Table
+  renderBudgetTable(data);
+}
+
+function renderBudgetTable(data){
+  let filtered = currentPersonFilter === "all" ? data : data.filter(e=>e.person===currentPersonFilter);
+  filtered = filtered.sort((a,b)=>b.date.localeCompare(a.date));
+  const tbody = document.getElementById("bud-table");
+  tbody.innerHTML = filtered.map(e=>`
+    <tr>
+      <td style="color:var(--muted)">${e.date}</td>
+      <td>${e.name}</td>
+      <td><span class="badge cat-${e.category}">${e.category}</span></td>
+      <td><span class="badge badge-${e.person==='Leo'?'leo':e.person==='小恩'?'xiao':'joint'}">${e.person}</span></td>
+      <td style="text-align:right" class="amount">${fmt(e.amount)}</td>
+    </tr>
+  `).join("");
+}
+
+function setPersonFilter(p, btn){
+  currentPersonFilter = p;
+  document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  renderBudgetTable(filterByMonth(currentMonth));
+}
+
+// ── Navigation ────────────────────────────────────────────────
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  document.getElementById("page-"+id).classList.add("active");
+  event.currentTarget.classList.add("active");
+}
+
+init();
+</script>
+</body>
+</html>
