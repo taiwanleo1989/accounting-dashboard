@@ -294,8 +294,8 @@ tr:hover td{background:var(--bg3)}
 </main>
 
 <script>
-// ── 資料（即時從 Notion 同步，透過 Cloudflare Worker 代理）──────
-const NOTION_PROXY_URL = "https://REPLACE_WITH_YOUR_WORKER_URL.workers.dev";
+// ── 資料（即時從 Notion 同步，透過 Vercel Serverless Function 代理）
+const NOTION_PROXY_URL = "https://REPLACE_WITH_YOUR_VERCEL_DOMAIN.vercel.app/api/expenses";
 let SYNC_TIME = "—";
 let EXPENSES = [];
 // ─────────────────────────────────────────────────────────────
