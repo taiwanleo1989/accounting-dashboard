@@ -43,6 +43,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .nav-item:hover{background:var(--bg3);color:var(--text)}
 .nav-item.active{background:var(--bg3);color:var(--accent)}
 .nav-item svg{width:18px;height:18px;flex-shrink:0}
+.nav-more{max-height:0;overflow:hidden;transition:max-height .2s}
+.nav-more.open{max-height:300px}
+.nav-subitem{padding-left:26px}
 .sidebar-footer{padding:16px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);line-height:1.6}
 .refresh-btn{margin-top:8px;width:100%;padding:7px 0;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:12px;cursor:pointer;transition:all .15s}
 .refresh-btn:hover{border-color:var(--accent);color:var(--accent)}
@@ -174,6 +177,8 @@ tr:hover td{background:var(--bg3)}
 .upcoming-days{font-size:11px;color:var(--gold);font-weight:600}
 /* Split-even grid (income page) */
 .charts-row.split-even{grid-template-columns:1fr 1fr}
+/* Four-panel grid (family report) */
+.four-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:20px}
 /* Bottom nav (mobile) */
 .bottom-nav{display:none}
 .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);cursor:pointer;font-size:10px}
@@ -191,7 +196,7 @@ tr:hover td{background:var(--bg3)}
   .stat-card{padding:10px 8px}
   .stat-label{font-size:10px;margin-bottom:4px}
   .stat-value{font-size:13px}
-  .charts-row,.charts-row.split-even{grid-template-columns:1fr}
+  .charts-row,.charts-row.split-even,.four-grid{grid-template-columns:1fr}
   .overview-layout{grid-template-columns:1fr}
   .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:56px;background:#fff;border-top:1px solid var(--border);z-index:50;align-items:stretch}
   .table-card table,.table-card thead,.table-card tbody,.table-card th{display:block}
@@ -240,21 +245,27 @@ tr:hover td{background:var(--bg3)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
       <span>小恩財報</span>
     </div>
-    <div class="nav-item" onclick="showPage('joint')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
-      <span>共同財報</span>
+    <div class="nav-item" onclick="toggleSidebarMore()" id="nav-more-toggle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+      <span>更多</span>
     </div>
-    <div class="nav-item" onclick="showPage('family')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
-      <span>家庭財報</span>
-    </div>
-    <div class="nav-item" onclick="showPage('income')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      <span>收入管理</span>
-    </div>
-    <div class="nav-item" onclick="showPage('recurring')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      <span>固定支出</span>
+    <div class="nav-more" id="nav-more-list">
+      <div class="nav-item nav-subitem" onclick="showPage('joint')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+        <span>共同財報</span>
+      </div>
+      <div class="nav-item nav-subitem" onclick="showPage('family')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+        <span>家庭財報</span>
+      </div>
+      <div class="nav-item nav-subitem" onclick="showPage('income')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>收入管理</span>
+      </div>
+      <div class="nav-item nav-subitem" onclick="showPage('recurring')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>固定支出</span>
+      </div>
     </div>
   </div>
   <div class="sidebar-footer">
@@ -346,7 +357,7 @@ tr:hover td{background:var(--bg3)}
     <div class="table-card">
       <div class="table-header">
         <div class="table-title">最新消費</div>
-        <span style="font-size:12px;color:var(--muted)">最近 10 筆</span>
+        <select class="month-select" id="recent-count-select" onchange="renderRecentTable()"></select>
       </div>
       <div class="table-scroll">
         <table>
@@ -529,19 +540,21 @@ tr:hover td{background:var(--bg3)}
       <div class="stat-card"><div class="stat-label">Leo 墊付</div><div class="stat-value" style="color:var(--accent2)" id="joint-leo-paid">—</div></div>
       <div class="stat-card"><div class="stat-label">小恩 墊付</div><div class="stat-value" style="color:var(--green)" id="joint-xiao-paid">—</div></div>
     </div>
-    <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-title">每月共同支出趨勢</div>
-      <div class="chart-wrap"><canvas id="joint-trend"></canvas></div>
-    </div>
-    <div class="settle-card">
-      <div class="settle-title">結算</div>
-      <div class="settle-row"><span style="color:var(--muted)">共同支出總額</span><span id="settle-joint">—</span></div>
-      <div class="settle-row"><span style="color:var(--muted)">公平分攤（各半）</span><span id="settle-half">—</span></div>
-      <div class="settle-row"><span style="color:var(--accent2)">Leo 實際墊付</span><span id="settle-leo">—</span></div>
-      <div class="settle-row"><span style="color:var(--green)">小恩 實際墊付</span><span id="settle-xiao">—</span></div>
-      <div class="settle-result" id="settle-result">
-        <span id="settle-text"></span>
-        <span id="settle-amount"></span>
+    <div class="charts-row split-even">
+      <div class="chart-card">
+        <div class="chart-title">每月共同支出趨勢</div>
+        <div class="chart-wrap"><canvas id="joint-trend"></canvas></div>
+      </div>
+      <div class="settle-card" style="margin-bottom:0">
+        <div class="settle-title">結算</div>
+        <div class="settle-row"><span style="color:var(--muted)">共同支出總額</span><span id="settle-joint">—</span></div>
+        <div class="settle-row"><span style="color:var(--muted)">公平分攤（各半）</span><span id="settle-half">—</span></div>
+        <div class="settle-row"><span style="color:var(--accent2)">Leo 實際墊付</span><span id="settle-leo">—</span></div>
+        <div class="settle-row"><span style="color:var(--green)">小恩 實際墊付</span><span id="settle-xiao">—</span></div>
+        <div class="settle-result" id="settle-result">
+          <span id="settle-text"></span>
+          <span id="settle-amount"></span>
+        </div>
       </div>
     </div>
     <div class="table-card">
@@ -572,11 +585,11 @@ tr:hover td{background:var(--bg3)}
       <div class="stat-card"><div class="stat-label">個人支出 Leo/小恩</div><div class="stat-value" style="font-size:15px" id="fam-personal">—</div></div>
       <div class="stat-card"><div class="stat-label">共同支出</div><div class="stat-value gold" id="fam-joint">—</div></div>
     </div>
-    <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-title">每月家庭支出趨勢</div>
-      <div class="chart-wrap"><canvas id="fam-trend"></canvas></div>
-    </div>
-    <div class="charts-row">
+    <div class="four-grid">
+      <div class="chart-card">
+        <div class="chart-title">每月家庭支出趨勢</div>
+        <div class="chart-wrap"><canvas id="fam-trend"></canvas></div>
+      </div>
       <div class="chart-card">
         <div class="chart-title">支出分類</div>
         <div class="legend" id="fam-cat-legend"></div>
@@ -593,15 +606,15 @@ tr:hover td{background:var(--bg3)}
           <div class="donut-center"><div class="donut-total" id="fam-person-total">—</div><div class="donut-label">總計</div></div>
         </div>
       </div>
-    </div>
-    <div class="settle-card">
-      <div class="settle-title">共同支出結算（未結清）</div>
-      <div class="settle-row"><span style="color:var(--muted)">公平分攤（各半）</span><span id="fam-settle-half">—</span></div>
-      <div class="settle-row"><span style="color:var(--accent2)">Leo 實際墊付</span><span id="fam-settle-leo">—</span></div>
-      <div class="settle-row"><span style="color:var(--green)">小恩 實際墊付</span><span id="fam-settle-xiao">—</span></div>
-      <div class="settle-result" id="fam-settle-result">
-        <span id="fam-settle-text"></span>
-        <span id="fam-settle-amount"></span>
+      <div class="settle-card" style="margin-bottom:0">
+        <div class="settle-title">共同支出結算（未結清）</div>
+        <div class="settle-row"><span style="color:var(--muted)">公平分攤（各半）</span><span id="fam-settle-half">—</span></div>
+        <div class="settle-row"><span style="color:var(--accent2)">Leo 實際墊付</span><span id="fam-settle-leo">—</span></div>
+        <div class="settle-row"><span style="color:var(--green)">小恩 實際墊付</span><span id="fam-settle-xiao">—</span></div>
+        <div class="settle-result" id="fam-settle-result">
+          <span id="fam-settle-text"></span>
+          <span id="fam-settle-amount"></span>
+        </div>
       </div>
     </div>
     <div class="table-card">
@@ -745,6 +758,11 @@ function getFullYearMonths(){
   return Array.from({length:12}, (_,i)=>`${y}-${String(i+1).padStart(2,"0")}`);
 }
 
+function getMonthOptions(){
+  const todayMonth = new Date().toISOString().slice(0,7);
+  return getFullYearMonths().filter(m => m <= todayMonth);
+}
+
 function getUpcomingBills(){
   const today = new Date(); today.setHours(0,0,0,0);
   return RECURRING.filter(r=>r.active && r.dueDay).map(r=>{
@@ -817,10 +835,10 @@ async function refreshData(){
       console.warn("固定支出資料同步失敗（可能尚未設定 NOTION_RECURRING_DB_ID）:", recResult.reason);
     }
 
-    const months = getFullYearMonths();
+    const monthOptions = getMonthOptions();
     const todayMonth = new Date().toISOString().slice(0,7);
-    if(!currentMonth || !months.includes(currentMonth)) currentMonth = months.includes(todayMonth) ? todayMonth : months[months.length - 1];
-    buildMonthBar(months);
+    if(!currentMonth || !monthOptions.includes(currentMonth)) currentMonth = monthOptions.includes(todayMonth) ? todayMonth : monthOptions[monthOptions.length - 1];
+    buildMonthBar(monthOptions);
     renderOverview();
     renderBudget();
     renderActivePage();
@@ -850,6 +868,10 @@ function initSidebarState(){
 
 function toggleMoreSheet(){
   document.getElementById("moreSheet").classList.toggle("open");
+}
+
+function toggleSidebarMore(){
+  document.getElementById("nav-more-list").classList.toggle("open");
 }
 
 function buildMonthBar(months){
@@ -908,7 +930,26 @@ function renderOverview(){
   }
 
   // Recent table
-  const sorted = [...data].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
+  buildRecentCountOptions(data.length);
+  renderRecentTable();
+
+  renderUpcomingBills();
+}
+
+function buildRecentCountOptions(total){
+  const sel = document.getElementById("recent-count-select");
+  const prevValue = sel.value;
+  const opts = [];
+  for(let n=10; n<total; n+=10) opts.push(n);
+  opts.push(total>0 ? total : 10);
+  sel.innerHTML = opts.map(n=>`<option value="${n}">${n===total?"全部 "+n+" 筆":"最近 "+n+" 筆"}</option>`).join("");
+  if(opts.includes(Number(prevValue))) sel.value = prevValue;
+}
+
+function renderRecentTable(){
+  const data = filterByMonth(currentMonth);
+  const count = Number(document.getElementById("recent-count-select").value) || 10;
+  const sorted = [...data].sort((a,b)=>b.date.localeCompare(a.date)).slice(0, count);
   const tbody = document.getElementById("recent-table");
   tbody.innerHTML = sorted.map(e=>`
     <tr>
@@ -919,8 +960,6 @@ function renderOverview(){
       <td data-label="金額" style="text-align:right" class="amount">${fmt(e.amount)}</td>
     </tr>
   `).join("");
-
-  renderUpcomingBills();
 }
 
 function renderUpcomingBills(){
@@ -1329,6 +1368,11 @@ function showPage(id){
   document.querySelectorAll(".nav-item,.bn-item").forEach(n=>n.classList.remove("active"));
   document.getElementById("page-"+id).classList.add("active");
   document.querySelectorAll(`.nav-item[onclick*="'${id}'"],.bn-item[onclick*="'${id}'"]`).forEach(n=>n.classList.add("active"));
+  const moreIds = ["joint","family","income","recurring"];
+  if(moreIds.includes(id)){
+    document.getElementById("nav-more-toggle").classList.add("active");
+    document.getElementById("nav-more-list").classList.add("open");
+  }
   if(id==="leo") renderPersonReport("Leo");
   else if(id==="xiao") renderPersonReport("小恩");
   else if(id==="joint") renderJointReport();
