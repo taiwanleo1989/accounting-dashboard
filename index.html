@@ -173,6 +173,14 @@ tr:hover td{background:var(--bg3)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
       <span>家庭財報</span>
     </div>
+    <div class="nav-item" onclick="showPage('income')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span>收入管理</span>
+    </div>
+    <div class="nav-item" onclick="showPage('recurring')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>固定支出</span>
+    </div>
   </div>
   <div class="sidebar-footer">
     <div id="lastSync">最後同步：—</div>
@@ -508,15 +516,86 @@ tr:hover td{background:var(--bg3)}
     </div>
   </div>
 
+  <!-- 收入管理 -->
+  <div class="page" id="page-income">
+    <div class="page-header">
+      <div class="page-title">收入管理</div>
+      <div class="page-sub">家庭收入記錄</div>
+    </div>
+    <div id="income-month-bar" class="month-bar"></div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">所選月份收入合計</div><div class="stat-value" style="color:var(--green)" id="inc-total">—</div></div>
+      <div class="stat-card"><div class="stat-label">Leo 收入</div><div class="stat-value" style="color:var(--accent2)" id="inc-leo">—</div></div>
+      <div class="stat-card"><div class="stat-label">小恩 收入</div><div class="stat-value" style="color:var(--green)" id="inc-xiao">—</div></div>
+      <div class="stat-card"><div class="stat-label">筆數</div><div class="stat-value" id="inc-count">—</div></div>
+    </div>
+    <div class="chart-card" style="margin-bottom:16px">
+      <div class="chart-title">收入類型佔比</div>
+      <div class="legend" id="inc-type-legend"></div>
+      <div class="donut-wrap">
+        <div class="chart-wrap"><canvas id="inc-type-chart"></canvas></div>
+        <div class="donut-center"><div class="donut-total" id="inc-donut-total">—</div><div class="donut-label">總計</div></div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><div class="table-title">收入記錄</div></div>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="setIncomePersonFilter('all',this)">全部</button>
+        <button class="filter-btn" onclick="setIncomePersonFilter('Leo',this)">Leo</button>
+        <button class="filter-btn" onclick="setIncomePersonFilter('小恩',this)">小恩</button>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>日期</th><th>項目</th><th>類型</th><th>成員</th><th style="text-align:right">金額</th></tr></thead>
+          <tbody id="inc-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 固定支出 -->
+  <div class="page" id="page-recurring">
+    <div class="page-header">
+      <div class="page-title">固定支出</div>
+      <div class="page-sub">每月固定帳單清單</div>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setRecurringFilter('all',this)">全部</button>
+      <button class="filter-btn" onclick="setRecurringFilter('Leo',this)">Leo</button>
+      <button class="filter-btn" onclick="setRecurringFilter('小恩',this)">小恩</button>
+      <button class="filter-btn" onclick="setRecurringFilter('共同',this)">共同</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">每月固定支出合計（啟用中）</div><div class="stat-value gold" id="rec-total">—</div></div>
+      <div class="stat-card"><div class="stat-label">啟用中筆數</div><div class="stat-value" id="rec-count">—</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">固定支出清單</div>
+        <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="rec-active-only" checked onchange="renderRecurring()"> 只顯示啟用中
+        </label>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>扣款日</th><th>項目</th><th>類別</th><th>成員</th><th>付款人</th><th style="text-align:right">金額</th><th>狀態</th></tr></thead>
+          <tbody id="rec-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <script>
 // ── 資料（即時從 Notion 同步，透過 Vercel Serverless Function 代理）
 const NOTION_PROXY_URL = "https://accounting-dashboard-dusky.vercel.app/api/expenses";
 const NOTION_INCOME_PROXY_URL = "https://accounting-dashboard-dusky.vercel.app/api/income";
+const NOTION_RECURRING_PROXY_URL = "https://accounting-dashboard-dusky.vercel.app/api/recurring";
 let SYNC_TIME = "—";
 let EXPENSES = [];
 let INCOME = [];
+let RECURRING = [];
 // ─────────────────────────────────────────────────────────────
 
 const CAT_COLORS = {
@@ -529,9 +608,12 @@ const PERSON_COLORS = {"Leo":"#0ea5e9","小恩":"#22c55e","共同":"#f5a623"};
 let currentMonth = "";
 let currentPersonFilter = "all";
 let jointIncludeSettled = false;
+let incomePersonFilter = "all";
+let recurringFilter = "all";
 let trendChartInst, catChartInst, budCatChartInst, personChartInst;
 let leoTrendChartInst, leoCatChartInst, xiaoTrendChartInst, xiaoCatChartInst;
 let jointTrendChartInst, famTrendChartInst, famCatChartInst, famPersonChartInst;
+let incTypeChartInst;
 
 function fmt(n){ return "NT$" + Math.round(n).toLocaleString(); }
 
@@ -578,6 +660,14 @@ async function fetchIncome(){
   return data;
 }
 
+async function fetchRecurring(){
+  const resp = await fetch(NOTION_RECURRING_PROXY_URL, { cache: "no-store" });
+  if(!resp.ok) throw new Error("HTTP " + resp.status);
+  const data = await resp.json();
+  if(data.error) throw new Error(data.error);
+  return data;
+}
+
 function fmtSyncTime(iso){
   const d = new Date(iso);
   if(isNaN(d)) return iso;
@@ -591,7 +681,7 @@ async function refreshData(){
   btn.disabled = true;
   btn.textContent = "🔄 更新中...";
   try{
-    const [expResult, incResult] = await Promise.allSettled([fetchExpenses(), fetchIncome()]);
+    const [expResult, incResult, recResult] = await Promise.allSettled([fetchExpenses(), fetchIncome(), fetchRecurring()]);
     if(expResult.status === "rejected") throw expResult.reason;
     const data = expResult.value;
     EXPENSES = data.expenses || [];
@@ -603,6 +693,13 @@ async function refreshData(){
     } else {
       INCOME = [];
       console.warn("收入資料同步失敗（可能尚未設定 NOTION_INCOME_DB_ID）:", incResult.reason);
+    }
+
+    if(recResult.status === "fulfilled"){
+      RECURRING = recResult.value.recurring || [];
+    } else {
+      RECURRING = [];
+      console.warn("固定支出資料同步失敗（可能尚未設定 NOTION_RECURRING_DB_ID）:", recResult.reason);
     }
 
     const months = getMonths();
@@ -653,6 +750,8 @@ function renderActivePage(){
   else if(activeId === "page-xiao") renderPersonReport("小恩");
   else if(activeId === "page-joint") renderJointReport();
   else if(activeId === "page-family") renderFamilyReport();
+  else if(activeId === "page-income") renderIncome();
+  else if(activeId === "page-recurring") renderRecurring();
 }
 
 // ── 總覽 ─────────────────────────────────────────────────────
@@ -1089,6 +1188,94 @@ function showPage(id){
   else if(id==="xiao") renderPersonReport("小恩");
   else if(id==="joint") renderJointReport();
   else if(id==="family") renderFamilyReport();
+  else if(id==="income") renderIncome();
+  else if(id==="recurring") renderRecurring();
+}
+
+// ── 收入管理 ─────────────────────────────────────────────────
+function setIncomePersonFilter(p, btn){
+  incomePersonFilter = p;
+  document.querySelectorAll("#page-income .filter-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  renderIncome();
+}
+
+function renderIncome(){
+  const monthData = INCOME.filter(i=>i.date.startsWith(currentMonth));
+  const total = monthData.reduce((s,i)=>s+i.amount,0);
+  const leo = monthData.filter(i=>i.person==="Leo").reduce((s,i)=>s+i.amount,0);
+  const xiao = monthData.filter(i=>i.person==="小恩").reduce((s,i)=>s+i.amount,0);
+
+  document.getElementById("inc-total").textContent = fmt(total);
+  document.getElementById("inc-leo").textContent = fmt(leo);
+  document.getElementById("inc-xiao").textContent = fmt(xiao);
+  document.getElementById("inc-count").textContent = monthData.length + " 筆";
+
+  const typeColors = {"薪資":"#0ea5e9","副業":"#8b5cf6","投資利息":"#f5a623"};
+  const typeMap = {};
+  monthData.forEach(i=>{ typeMap[i.type]=(typeMap[i.type]||0)+i.amount; });
+  const types = Object.keys(typeMap);
+  const typeAmounts = types.map(t=>typeMap[t]);
+  const typeColorList = types.map(t=>typeColors[t]||"#888");
+
+  document.getElementById("inc-donut-total").textContent = fmt(total);
+  document.getElementById("inc-type-legend").innerHTML = types.map((t,i)=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${typeColorList[i]}"></div>${t} ${total?Math.round(typeAmounts[i]/total*100):0}%</div>`
+  ).join("");
+  if(incTypeChartInst) incTypeChartInst.destroy();
+  incTypeChartInst = new Chart(document.getElementById("inc-type-chart"), {
+    type:"doughnut",
+    data:{labels:types, datasets:[{data:typeAmounts, backgroundColor:typeColorList, borderWidth:0}]},
+    options:{responsive:true, maintainAspectRatio:false, cutout:"70%", plugins:{legend:{display:false}}}
+  });
+
+  const filtered = (incomePersonFilter==="all" ? monthData : monthData.filter(i=>i.person===incomePersonFilter))
+    .sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById("inc-table").innerHTML = filtered.map(i=>`
+    <tr>
+      <td style="color:var(--muted)">${i.date}</td>
+      <td>${i.name}</td>
+      <td>${i.type}</td>
+      <td><span class="badge ${i.person==='Leo'?'badge-leo':'badge-xiao'}">${i.person}</span></td>
+      <td style="text-align:right" class="amount">${fmt(i.amount)}</td>
+    </tr>
+  `).join("");
+}
+
+// ── 固定支出 ─────────────────────────────────────────────────
+function setRecurringFilter(p, btn){
+  recurringFilter = p;
+  document.querySelectorAll("#page-recurring .filter-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  renderRecurring();
+}
+
+function renderRecurring(){
+  const activeOnly = document.getElementById("rec-active-only").checked;
+  let rows = recurringFilter==="all" ? RECURRING : RECURRING.filter(r=>r.person===recurringFilter);
+  if(activeOnly) rows = rows.filter(r=>r.active);
+
+  const activeRows = recurringFilter==="all" ? RECURRING.filter(r=>r.active) : RECURRING.filter(r=>r.person===recurringFilter && r.active);
+  const total = activeRows.reduce((s,r)=>s+r.amount,0);
+  document.getElementById("rec-total").textContent = fmt(total);
+  document.getElementById("rec-count").textContent = activeRows.length + " 筆";
+
+  const sorted = [...rows].sort((a,b)=>(a.dueDay||99)-(b.dueDay||99));
+  document.getElementById("rec-table").innerHTML = sorted.map(r=>{
+    const personBadge = r.person==="Leo"?"badge-leo":r.person==="小恩"?"badge-xiao":"badge-joint";
+    const payerBadge = r.payer==="Leo"?"badge-leo":"badge-xiao";
+    return `
+      <tr>
+        <td style="color:var(--muted)">每月 ${r.dueDay ?? "—"} 號</td>
+        <td>${r.name}</td>
+        <td><span class="badge cat-${r.category}">${r.category}</span></td>
+        <td><span class="badge ${personBadge}">${r.person}</span></td>
+        <td><span class="badge ${payerBadge}">${r.payer||"—"}</span></td>
+        <td style="text-align:right" class="amount">${fmt(r.amount)}</td>
+        <td>${r.active ? '<span class="badge" style="background:rgba(34,197,94,.15);color:#4ade80">啟用中</span>' : '<span class="badge" style="background:rgba(107,122,153,.15);color:#6b7a99">已停用</span>'}</td>
+      </tr>
+    `;
+  }).join("");
 }
 
 init();
