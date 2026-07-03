@@ -11,14 +11,14 @@
   --bg:#FBFCFD;
   --bg2:#FBFCFD;
   --bg3:#F3F7F9;
-  --card:#E4F0F5;
-  --card2:#FBF1DD;
-  --border:#E3ECF2;
-  --text:#365A6B;
-  --muted:#6B98AC;
-  --accent:#4A7A8D;
-  --accent2:#5B8CA0;
-  --gold:#9C8140;
+  --card:#FBF1DD;
+  --card2:#E4F0F5;
+  --border:#EFE6CC;
+  --text:#6E5A26;
+  --muted:#B79A5C;
+  --accent:#9C8140;
+  --accent2:#B79A5C;
+  --gold:#5B8CA0;
   --red:#c0392b;
   --green:#3b8a5e;
   --purple:#8b5cf6;
@@ -59,9 +59,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* Stats row */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
-.stat-card.yellow{background:var(--card2)}
+.stat-card.yellow{background:#FBF1DD}
 .stat-card.yellow .stat-label{color:#B79A5C}
 .stat-card.yellow .stat-value{color:#6E5A26}
+.stat-card.blue{background:#E4F0F5}
+.stat-card.blue .stat-label{color:#6B98AC}
+.stat-card.blue .stat-value{color:#365A6B}
 .stat-label{font-size:11px;color:var(--muted);margin-bottom:6px}
 .stat-value{font-size:15px;font-weight:700;color:var(--text)}
 .stat-value.accent{color:var(--accent)}
@@ -113,7 +116,7 @@ tr:hover td{background:var(--bg3)}
 /* Month selector */
 .month-bar{display:flex;align-items:center;gap:12px;margin-bottom:20px}
 .month-btn{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:13px;cursor:pointer;transition:all .15s}
-.month-btn.active{border-color:var(--accent);color:var(--accent);background:#E4F0F5}
+.month-btn.active{border-color:var(--accent);color:var(--accent);background:#FBF1DD}
 /* Person filter */
 .filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .filter-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s}
@@ -691,7 +694,7 @@ const CAT_COLORS = {
 };
 const PERSON_COLORS = {"Leo":"#4A7A8D","小恩":"#9C8140","共同":"#5B8CA0"};
 const CHART_GRID = "rgba(54,90,107,0.08)";
-const CHART_TICK = "#6B98AC";
+const CHART_TICK = "#B79A5C";
 
 let currentMonth = "";
 let currentPersonFilter = "all";
@@ -1262,7 +1265,7 @@ function renderFamilyReport(){
   if(famTrendChartInst) famTrendChartInst.destroy();
   famTrendChartInst = new Chart(document.getElementById("fam-trend"), {
     type:"line",
-    data:{labels:months.map(m=>m.replace("-","/")), datasets:[{data:trendData, borderColor:"#4A7A8D", backgroundColor:"rgba(74,122,141,.12)", fill:true, tension:.4, pointRadius:3, borderWidth:2}]},
+    data:{labels:months.map(m=>m.replace("-","/")), datasets:[{data:trendData, borderColor:"#9C8140", backgroundColor:"rgba(156,129,64,.12)", fill:true, tension:.4, pointRadius:3, borderWidth:2}]},
     options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
       scales:{x:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK}}, y:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,callback:v=>"NT$"+v.toLocaleString()}}}}
   });
