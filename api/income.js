@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     let cursor;
     do {
       const resp = await fetch(
-        `https://api.notion.com/v1/databases/${process.env.NOTION_DATABASE_ID}/query`,
+        `https://api.notion.com/v1/databases/${process.env.NOTION_INCOME_DB_ID}/query`,
         {
           method: "POST",
           headers: {
@@ -40,23 +40,21 @@ export default async function handler(req, res) {
       cursor = data.has_more ? data.next_cursor : undefined;
     } while (cursor);
 
-    const expenses = results
+    const income = results
       .map((page) => {
         const p = page.properties;
         return {
           date: p["日期"]?.date?.start?.slice(0, 10) || "",
           name: p["名稱"]?.title?.[0]?.plain_text || "",
-          category: p["類別"]?.select?.name || "其他",
+          type: p["類型"]?.select?.name || "",
           person: p["成員"]?.select?.name || "",
           amount: p["金額"]?.number || 0,
-          payer: p["付款人"]?.select?.name || "",
-          settled: p["是否結清"]?.checkbox ?? true,
           note: p["備註"]?.rich_text?.[0]?.plain_text || "",
         };
       })
-      .filter((e) => e.date && e.name);
+      .filter((i) => i.date && i.name);
 
-    res.status(200).json({ syncTime: new Date().toISOString(), expenses });
+    res.status(200).json({ syncTime: new Date().toISOString(), income });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

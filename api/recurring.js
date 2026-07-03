@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     let cursor;
     do {
       const resp = await fetch(
-        `https://api.notion.com/v1/databases/${process.env.NOTION_DATABASE_ID}/query`,
+        `https://api.notion.com/v1/databases/${process.env.NOTION_RECURRING_DB_ID}/query`,
         {
           method: "POST",
           headers: {
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
           body: JSON.stringify({
             start_cursor: cursor,
             page_size: 100,
-            sorts: [{ property: "日期", direction: "descending" }],
+            sorts: [{ property: "每月扣款日", direction: "ascending" }],
           }),
         }
       );
@@ -40,23 +40,24 @@ export default async function handler(req, res) {
       cursor = data.has_more ? data.next_cursor : undefined;
     } while (cursor);
 
-    const expenses = results
+    const recurring = results
       .map((page) => {
         const p = page.properties;
         return {
-          date: p["日期"]?.date?.start?.slice(0, 10) || "",
           name: p["名稱"]?.title?.[0]?.plain_text || "",
-          category: p["類別"]?.select?.name || "其他",
-          person: p["成員"]?.select?.name || "",
           amount: p["金額"]?.number || 0,
+          person: p["成員"]?.select?.name || "",
           payer: p["付款人"]?.select?.name || "",
-          settled: p["是否結清"]?.checkbox ?? true,
+          category: p["類別"]?.select?.name || "其他",
+          dueDay: p["每月扣款日"]?.number || null,
+          reminderDays: p["提前提醒天數"]?.number ?? 3,
+          active: p["啟用中"]?.checkbox ?? true,
           note: p["備註"]?.rich_text?.[0]?.plain_text || "",
         };
       })
-      .filter((e) => e.date && e.name);
+      .filter((r) => r.name);
 
-    res.status(200).json({ syncTime: new Date().toISOString(), expenses });
+    res.status(200).json({ syncTime: new Date().toISOString(), recurring });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

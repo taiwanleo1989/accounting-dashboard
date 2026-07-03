@@ -122,6 +122,15 @@ tr:hover td{background:var(--bg3)}
 .table-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 /* Amount color */
 .amount{font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+/* Settlement card */
+.settle-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:20px}
+.settle-title{font-size:14px;font-weight:600;margin-bottom:10px;color:var(--gold)}
+.settle-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.settle-row:last-child{border:none}
+.settle-result{border-radius:8px;padding:12px 16px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;background:rgba(34,197,94,.08);border:1px solid var(--green)}
+.settle-result.owe{background:rgba(239,68,68,.08);border-color:var(--red)}
+.settle-result span:first-child{font-size:13px;font-weight:600}
+.settle-result span:last-child{font-size:20px;font-weight:700}
 /* Responsive */
 @media(max-width:900px){
   .sidebar{width:60px}
@@ -147,6 +156,22 @@ tr:hover td{background:var(--bg3)}
     <div class="nav-item" onclick="showPage('budget')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
       <span>記帳管理</span>
+    </div>
+    <div class="nav-item" onclick="showPage('leo')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+      <span>Leo財報</span>
+    </div>
+    <div class="nav-item" onclick="showPage('xiao')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+      <span>小恩財報</span>
+    </div>
+    <div class="nav-item" onclick="showPage('joint')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+      <span>共同財報</span>
+    </div>
+    <div class="nav-item" onclick="showPage('family')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+      <span>家庭財報</span>
     </div>
   </div>
   <div class="sidebar-footer">
@@ -291,13 +316,207 @@ tr:hover td{background:var(--bg3)}
     </div>
   </div>
 
+  <!-- Leo 財報 -->
+  <div class="page" id="page-leo">
+    <div class="page-header">
+      <div class="page-title">Leo 財報</div>
+      <div class="page-sub">個人收支與共同分攤</div>
+    </div>
+    <div id="leo-month-bar" class="month-bar"></div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">收入合計</div><div class="stat-value" style="color:var(--green)" id="leo-income">—</div></div>
+      <div class="stat-card"><div class="stat-label">個人支出</div><div class="stat-value" id="leo-expense">—</div></div>
+      <div class="stat-card"><div class="stat-label">共同分攤</div><div class="stat-value gold" id="leo-jointhalf">—</div></div>
+      <div class="stat-card"><div class="stat-label">本期結餘</div><div class="stat-value" id="leo-balance">—</div></div>
+    </div>
+    <div class="stats-row" style="margin-top:-6px">
+      <div class="stat-card"><div class="stat-label">消費筆數</div><div class="stat-value" id="leo-count">—</div></div>
+      <div class="stat-card"><div class="stat-label">最高單筆</div><div class="stat-value" id="leo-max">—</div></div>
+      <div class="stat-card"><div class="stat-label">日均消費</div><div class="stat-value" id="leo-avg">—</div></div>
+      <div class="stat-card"><div class="stat-label">累計結餘</div><div class="stat-value" id="leo-cumul">—</div></div>
+    </div>
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">月度支出趨勢</div>
+        <div class="chart-wrap"><canvas id="leo-trend"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">分類佔比</div>
+        <div class="legend" id="leo-cat-legend"></div>
+        <div class="donut-wrap">
+          <div class="chart-wrap"><canvas id="leo-cat"></canvas></div>
+          <div class="donut-center"><div class="donut-total" id="leo-donut-total">—</div><div class="donut-label">總計</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><div class="table-title">消費明細</div></div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>日期</th><th>項目</th><th>類別</th><th style="text-align:right">金額</th></tr></thead>
+          <tbody id="leo-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 小恩 財報 -->
+  <div class="page" id="page-xiao">
+    <div class="page-header">
+      <div class="page-title">小恩 財報</div>
+      <div class="page-sub">個人收支與共同分攤</div>
+    </div>
+    <div id="xiao-month-bar" class="month-bar"></div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">收入合計</div><div class="stat-value" style="color:var(--green)" id="xiao-income">—</div></div>
+      <div class="stat-card"><div class="stat-label">個人支出</div><div class="stat-value" id="xiao-expense">—</div></div>
+      <div class="stat-card"><div class="stat-label">共同分攤</div><div class="stat-value gold" id="xiao-jointhalf">—</div></div>
+      <div class="stat-card"><div class="stat-label">本期結餘</div><div class="stat-value" id="xiao-balance">—</div></div>
+    </div>
+    <div class="stats-row" style="margin-top:-6px">
+      <div class="stat-card"><div class="stat-label">消費筆數</div><div class="stat-value" id="xiao-count">—</div></div>
+      <div class="stat-card"><div class="stat-label">最高單筆</div><div class="stat-value" id="xiao-max">—</div></div>
+      <div class="stat-card"><div class="stat-label">日均消費</div><div class="stat-value" id="xiao-avg">—</div></div>
+      <div class="stat-card"><div class="stat-label">累計結餘</div><div class="stat-value" id="xiao-cumul">—</div></div>
+    </div>
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">月度支出趨勢</div>
+        <div class="chart-wrap"><canvas id="xiao-trend"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">分類佔比</div>
+        <div class="legend" id="xiao-cat-legend"></div>
+        <div class="donut-wrap">
+          <div class="chart-wrap"><canvas id="xiao-cat"></canvas></div>
+          <div class="donut-center"><div class="donut-total" id="xiao-donut-total">—</div><div class="donut-label">總計</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><div class="table-title">消費明細</div></div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>日期</th><th>項目</th><th>類別</th><th style="text-align:right">金額</th></tr></thead>
+          <tbody id="xiao-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 共同 財報 -->
+  <div class="page" id="page-joint">
+    <div class="page-header">
+      <div class="page-title">共同財報</div>
+      <div class="page-sub">共同支出與結算</div>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setJointSettleFilter(false,this)">未結清</button>
+      <button class="filter-btn" onclick="setJointSettleFilter(true,this)">含已結清</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">共同總支出</div><div class="stat-value gold" id="joint-total">—</div></div>
+      <div class="stat-card"><div class="stat-label">各人應付</div><div class="stat-value" id="joint-half">—</div></div>
+      <div class="stat-card"><div class="stat-label">Leo 墊付</div><div class="stat-value" style="color:var(--accent2)" id="joint-leo-paid">—</div></div>
+      <div class="stat-card"><div class="stat-label">小恩 墊付</div><div class="stat-value" style="color:var(--green)" id="joint-xiao-paid">—</div></div>
+    </div>
+    <div class="chart-card" style="margin-bottom:16px">
+      <div class="chart-title">每月共同支出趨勢</div>
+      <div class="chart-wrap"><canvas id="joint-trend"></canvas></div>
+    </div>
+    <div class="settle-card">
+      <div class="settle-title">結算</div>
+      <div class="settle-row"><span style="color:var(--muted)">共同支出總額</span><span id="settle-joint">—</span></div>
+      <div class="settle-row"><span style="color:var(--muted)">公平分攤（各半）</span><span id="settle-half">—</span></div>
+      <div class="settle-row"><span style="color:var(--accent2)">Leo 實際墊付</span><span id="settle-leo">—</span></div>
+      <div class="settle-row"><span style="color:var(--green)">小恩 實際墊付</span><span id="settle-xiao">—</span></div>
+      <div class="settle-result" id="settle-result">
+        <span id="settle-text"></span>
+        <span id="settle-amount"></span>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><div class="table-title">共同支出明細</div></div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>項目</th><th>日期</th><th>類別</th><th>付款人</th><th style="text-align:right">金額</th></tr></thead>
+          <tbody id="joint-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 家庭 財報 -->
+  <div class="page" id="page-family">
+    <div class="page-header">
+      <div class="page-title">家庭財報</div>
+      <div class="page-sub">全家收支總覽與共同結算</div>
+    </div>
+    <div id="family-month-bar" class="month-bar"></div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">家庭總收入</div><div class="stat-value" style="color:var(--green)" id="fam-income">—</div></div>
+      <div class="stat-card"><div class="stat-label">家庭總支出</div><div class="stat-value" style="color:var(--red)" id="fam-expense">—</div></div>
+      <div class="stat-card"><div class="stat-label">家庭結餘</div><div class="stat-value" id="fam-balance">—</div></div>
+      <div class="stat-card"><div class="stat-label">累計結餘</div><div class="stat-value" id="fam-cumul">—</div></div>
+    </div>
+    <div class="stats-row" style="margin-top:-6px">
+      <div class="stat-card"><div class="stat-label">Leo 收入</div><div class="stat-value" style="color:var(--accent2)" id="fam-leo-income">—</div></div>
+      <div class="stat-card"><div class="stat-label">小恩 收入</div><div class="stat-value" style="color:var(--green)" id="fam-xiao-income">—</div></div>
+      <div class="stat-card"><div class="stat-label">個人支出 Leo/小恩</div><div class="stat-value" style="font-size:15px" id="fam-personal">—</div></div>
+      <div class="stat-card"><div class="stat-label">共同支出</div><div class="stat-value gold" id="fam-joint">—</div></div>
+    </div>
+    <div class="chart-card" style="margin-bottom:16px">
+      <div class="chart-title">每月家庭支出趨勢</div>
+      <div class="chart-wrap"><canvas id="fam-trend"></canvas></div>
+    </div>
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">支出分類</div>
+        <div class="legend" id="fam-cat-legend"></div>
+        <div class="donut-wrap">
+          <div class="chart-wrap"><canvas id="fam-cat"></canvas></div>
+          <div class="donut-center"><div class="donut-total" id="fam-cat-total">—</div><div class="donut-label">總計</div></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">成員分配</div>
+        <div class="legend" id="fam-person-legend"></div>
+        <div class="donut-wrap">
+          <div class="chart-wrap"><canvas id="fam-person"></canvas></div>
+          <div class="donut-center"><div class="donut-total" id="fam-person-total">—</div><div class="donut-label">總計</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="settle-card">
+      <div class="settle-title">共同支出結算（未結清）</div>
+      <div class="settle-row"><span style="color:var(--muted)">公平分攤（各半）</span><span id="fam-settle-half">—</span></div>
+      <div class="settle-row"><span style="color:var(--accent2)">Leo 實際墊付</span><span id="fam-settle-leo">—</span></div>
+      <div class="settle-row"><span style="color:var(--green)">小恩 實際墊付</span><span id="fam-settle-xiao">—</span></div>
+      <div class="settle-result" id="fam-settle-result">
+        <span id="fam-settle-text"></span>
+        <span id="fam-settle-amount"></span>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><div class="table-title">完整明細</div></div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>日期</th><th>項目</th><th>類別</th><th>成員</th><th>付款人</th><th style="text-align:right">金額</th></tr></thead>
+          <tbody id="fam-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <script>
 // ── 資料（即時從 Notion 同步，透過 Vercel Serverless Function 代理）
 const NOTION_PROXY_URL = "https://accounting-dashboard-dusky.vercel.app/api/expenses";
+const NOTION_INCOME_PROXY_URL = "https://accounting-dashboard-dusky.vercel.app/api/income";
 let SYNC_TIME = "—";
 let EXPENSES = [];
+let INCOME = [];
 // ─────────────────────────────────────────────────────────────
 
 const CAT_COLORS = {
@@ -309,9 +528,31 @@ const PERSON_COLORS = {"Leo":"#0ea5e9","小恩":"#22c55e","共同":"#f5a623"};
 
 let currentMonth = "";
 let currentPersonFilter = "all";
+let jointIncludeSettled = false;
 let trendChartInst, catChartInst, budCatChartInst, personChartInst;
+let leoTrendChartInst, leoCatChartInst, xiaoTrendChartInst, xiaoCatChartInst;
+let jointTrendChartInst, famTrendChartInst, famCatChartInst, famPersonChartInst;
 
 function fmt(n){ return "NT$" + Math.round(n).toLocaleString(); }
+
+// ── 結餘計算（取代 system_prompt.md 的模板A-D結餘公式）────────────
+function balanceStyle(v){ return v>0 ? "color:var(--accent)" : v<0 ? "color:var(--red)" : "color:var(--muted)"; }
+function balanceDisplay(v){ return v===0 ? "NT$0" : (v<0?"-":"") + fmt(Math.abs(v)); }
+
+function familyBalance(exp, inc){
+  const totalInc = inc.reduce((s,x)=>s+x.amount,0);
+  const totalExp = exp.reduce((s,x)=>s+x.amount,0);
+  return { totalInc, totalExp, balance: totalInc - totalExp };
+}
+
+function settleUp(jointExpenses){
+  const leoPaid = jointExpenses.filter(x=>x.payer==="Leo").reduce((s,x)=>s+x.amount,0);
+  const xiaoPaid = jointExpenses.filter(x=>x.payer==="小恩").reduce((s,x)=>s+x.amount,0);
+  const diff = leoPaid - xiaoPaid;
+  const amount = Math.abs(diff)/2;
+  const text = diff>0 ? "小恩 應還 Leo" : diff<0 ? "Leo 應還 小恩" : "已平帳 🎉";
+  return { leoPaid, xiaoPaid, amount, text, owe: diff!==0 };
+}
 
 function getMonths(){
   const months = [...new Set(EXPENSES.map(e => e.date.slice(0,7)))].sort();
@@ -323,6 +564,14 @@ function filterByMonth(month){ return EXPENSES.filter(e => e.date.startsWith(mon
 // ── 資料載入 ─────────────────────────────────────────────────
 async function fetchExpenses(){
   const resp = await fetch(NOTION_PROXY_URL, { cache: "no-store" });
+  if(!resp.ok) throw new Error("HTTP " + resp.status);
+  const data = await resp.json();
+  if(data.error) throw new Error(data.error);
+  return data;
+}
+
+async function fetchIncome(){
+  const resp = await fetch(NOTION_INCOME_PROXY_URL, { cache: "no-store" });
   if(!resp.ok) throw new Error("HTTP " + resp.status);
   const data = await resp.json();
   if(data.error) throw new Error(data.error);
@@ -342,16 +591,26 @@ async function refreshData(){
   btn.disabled = true;
   btn.textContent = "🔄 更新中...";
   try{
-    const data = await fetchExpenses();
+    const [expResult, incResult] = await Promise.allSettled([fetchExpenses(), fetchIncome()]);
+    if(expResult.status === "rejected") throw expResult.reason;
+    const data = expResult.value;
     EXPENSES = data.expenses || [];
     SYNC_TIME = fmtSyncTime(data.syncTime);
     syncEl.textContent = "最後同步：" + SYNC_TIME;
+
+    if(incResult.status === "fulfilled"){
+      INCOME = incResult.value.income || [];
+    } else {
+      INCOME = [];
+      console.warn("收入資料同步失敗（可能尚未設定 NOTION_INCOME_DB_ID）:", incResult.reason);
+    }
 
     const months = getMonths();
     if(!months.includes(currentMonth)) currentMonth = months[months.length - 1] || "";
     buildMonthBar(months);
     renderOverview();
     renderBudget();
+    renderActivePage();
   }catch(err){
     syncEl.textContent = "同步失敗，請稍後再試";
     console.error("Notion 同步失敗:", err);
@@ -367,20 +626,33 @@ function init(){
 }
 
 function buildMonthBar(months){
-  const bar = document.getElementById("month-bar");
-  bar.innerHTML = "";
-  months.forEach(m => {
-    const btn = document.createElement("button");
-    btn.className = "month-btn" + (m === currentMonth ? " active" : "");
-    btn.textContent = m.replace("-","年") + "月";
-    btn.onclick = () => {
-      currentMonth = m;
-      document.querySelectorAll(".month-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      renderBudget();
-    };
-    bar.appendChild(btn);
+  document.querySelectorAll(".month-bar").forEach(bar => {
+    bar.innerHTML = "";
+    months.forEach(m => {
+      const btn = document.createElement("button");
+      btn.className = "month-btn" + (m === currentMonth ? " active" : "");
+      btn.textContent = m.replace("-","年") + "月";
+      btn.onclick = () => onMonthChange(m);
+      bar.appendChild(btn);
+    });
   });
+}
+
+function onMonthChange(m){
+  currentMonth = m;
+  document.querySelectorAll(".month-bar").forEach(bar => {
+    [...bar.children].forEach(b => b.classList.toggle("active", b.textContent === m.replace("-","年") + "月"));
+  });
+  renderBudget();
+  renderActivePage();
+}
+
+function renderActivePage(){
+  const activeId = document.querySelector(".page.active")?.id;
+  if(activeId === "page-leo") renderPersonReport("Leo");
+  else if(activeId === "page-xiao") renderPersonReport("小恩");
+  else if(activeId === "page-joint") renderJointReport();
+  else if(activeId === "page-family") renderFamilyReport();
 }
 
 // ── 總覽 ─────────────────────────────────────────────────────
@@ -571,12 +843,252 @@ function setPersonFilter(p, btn){
   renderBudgetTable(filterByMonth(currentMonth));
 }
 
+// ── Leo / 小恩 財報（取代模板A/B）───────────────────────────────
+function renderPersonReport(person){
+  const isLeo = person === "Leo";
+  const prefix = isLeo ? "leo" : "xiao";
+
+  const expAll = filterByMonth(currentMonth).filter(e=>e.person===person);
+  const jointAll = filterByMonth(currentMonth).filter(e=>e.person==="共同");
+  const incAll = INCOME.filter(i=>i.date.startsWith(currentMonth) && i.person===person);
+
+  const income = incAll.reduce((s,i)=>s+i.amount,0);
+  const expense = expAll.reduce((s,e)=>s+e.amount,0);
+  const jointHalf = jointAll.reduce((s,e)=>s+e.amount,0)/2;
+  const balance = income - expense - jointHalf;
+
+  document.getElementById(prefix+"-income").textContent = fmt(income);
+  document.getElementById(prefix+"-expense").textContent = fmt(expense);
+  document.getElementById(prefix+"-jointhalf").textContent = fmt(jointHalf);
+  const balEl = document.getElementById(prefix+"-balance");
+  balEl.textContent = balanceDisplay(balance);
+  balEl.setAttribute("style", balanceStyle(balance));
+
+  document.getElementById(prefix+"-count").textContent = expAll.length + " 筆";
+  const maxAmt = expAll.length ? Math.max(...expAll.map(e=>e.amount)) : 0;
+  document.getElementById(prefix+"-max").textContent = fmt(maxAmt);
+  const days = new Set(expAll.map(e=>e.date)).size || 1;
+  document.getElementById(prefix+"-avg").textContent = fmt(expense/days);
+
+  const expAllTime = EXPENSES.filter(e=>e.person===person);
+  const jointAllTime = EXPENSES.filter(e=>e.person==="共同");
+  const incAllTime = INCOME.filter(i=>i.person===person);
+  const cumulBalance = incAllTime.reduce((s,i)=>s+i.amount,0) - expAllTime.reduce((s,e)=>s+e.amount,0) - jointAllTime.reduce((s,e)=>s+e.amount,0)/2;
+  const cumulEl = document.getElementById(prefix+"-cumul");
+  cumulEl.textContent = balanceDisplay(cumulBalance);
+  cumulEl.setAttribute("style", balanceStyle(cumulBalance));
+
+  const months = getMonths();
+  const trendData = months.map(m=>filterByMonth(m).filter(e=>e.person===person).reduce((s,e)=>s+e.amount,0));
+  const trendColor = isLeo ? "#0ea5e9" : "#22c55e";
+  if(isLeo){ if(leoTrendChartInst) leoTrendChartInst.destroy(); }
+  else { if(xiaoTrendChartInst) xiaoTrendChartInst.destroy(); }
+  const trendChart = new Chart(document.getElementById(prefix+"-trend"), {
+    type:"bar",
+    data:{labels:months.map(m=>m.replace("-","/")), datasets:[{data:trendData, backgroundColor:trendColor, borderRadius:6, barThickness:40}]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99"}}, y:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99",callback:v=>"NT$"+v.toLocaleString()}}}}
+  });
+  if(isLeo) leoTrendChartInst = trendChart; else xiaoTrendChartInst = trendChart;
+
+  const catMap = {};
+  expAll.forEach(e=>{ catMap[e.category]=(catMap[e.category]||0)+e.amount; });
+  const cats = Object.keys(catMap);
+  const catAmounts = cats.map(c=>catMap[c]);
+  const catColors = cats.map(c=>CAT_COLORS[c]||"#888");
+  document.getElementById(prefix+"-donut-total").textContent = fmt(expense);
+  document.getElementById(prefix+"-cat-legend").innerHTML = cats.map((c,i)=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${catColors[i]}"></div>${c} ${expense?Math.round(catAmounts[i]/expense*100):0}%</div>`
+  ).join("");
+  if(isLeo){ if(leoCatChartInst) leoCatChartInst.destroy(); }
+  else { if(xiaoCatChartInst) xiaoCatChartInst.destroy(); }
+  const catChart = new Chart(document.getElementById(prefix+"-cat"), {
+    type:"doughnut",
+    data:{labels:cats, datasets:[{data:catAmounts, backgroundColor:catColors, borderWidth:0}]},
+    options:{responsive:true, maintainAspectRatio:false, cutout:"70%", plugins:{legend:{display:false}}}
+  });
+  if(isLeo) leoCatChartInst = catChart; else xiaoCatChartInst = catChart;
+
+  const sorted = [...expAll].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById(prefix+"-table").innerHTML = sorted.map(e=>`
+    <tr>
+      <td style="color:var(--muted)">${e.date}</td>
+      <td>${e.name}</td>
+      <td><span class="badge cat-${e.category}">${e.category}</span></td>
+      <td style="text-align:right" class="amount">${fmt(e.amount)}</td>
+    </tr>
+  `).join("");
+}
+
+// ── 共同財報（取代模板C）───────────────────────────────────────
+function setJointSettleFilter(includeSettled, btn){
+  jointIncludeSettled = includeSettled;
+  document.querySelectorAll("#page-joint .filter-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  renderJointReport();
+}
+
+function renderJointReport(){
+  let joint = EXPENSES.filter(e=>e.person==="共同");
+  if(!jointIncludeSettled) joint = joint.filter(e=>!e.settled);
+
+  const total = joint.reduce((s,e)=>s+e.amount,0);
+  const half = total/2;
+  const {leoPaid, xiaoPaid, amount, text, owe} = settleUp(joint);
+
+  document.getElementById("joint-total").textContent = fmt(total);
+  document.getElementById("joint-half").textContent = fmt(half);
+  document.getElementById("joint-leo-paid").textContent = fmt(leoPaid);
+  document.getElementById("joint-xiao-paid").textContent = fmt(xiaoPaid);
+
+  document.getElementById("settle-joint").textContent = fmt(total);
+  document.getElementById("settle-half").textContent = fmt(half);
+  document.getElementById("settle-leo").textContent = fmt(leoPaid);
+  document.getElementById("settle-xiao").textContent = fmt(xiaoPaid);
+  document.getElementById("settle-text").textContent = text;
+  document.getElementById("settle-amount").textContent = fmt(amount);
+  document.getElementById("settle-result").className = "settle-result" + (owe?" owe":"");
+
+  const months = getMonths();
+  const trendData = months.map(m=>{
+    let d = EXPENSES.filter(e=>e.person==="共同" && e.date.startsWith(m));
+    if(!jointIncludeSettled) d = d.filter(e=>!e.settled);
+    return d.reduce((s,e)=>s+e.amount,0);
+  });
+  if(jointTrendChartInst) jointTrendChartInst.destroy();
+  jointTrendChartInst = new Chart(document.getElementById("joint-trend"), {
+    type:"line",
+    data:{labels:months.map(m=>m.replace("-","/")), datasets:[{data:trendData, borderColor:"#f5a623", backgroundColor:"rgba(245,166,35,.1)", fill:true, tension:.4, pointRadius:3, borderWidth:2}]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99"}}, y:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99",callback:v=>"NT$"+v.toLocaleString()}}}}
+  });
+
+  const groups = {};
+  joint.forEach(e=>{ (groups[e.name] ||= []).push(e); });
+  Object.values(groups).forEach(g=>g.sort((a,b)=>a.date.localeCompare(b.date)));
+  const rows = [];
+  Object.keys(groups).forEach(name=>{
+    rows.push(`<tr><td colspan="5" style="background:var(--bg3);color:var(--muted);font-weight:600;font-size:11px;padding:6px 12px">▸ ${name}</td></tr>`);
+    groups[name].forEach(e=>{
+      const payerClass = e.payer==="Leo" ? "badge-leo" : e.payer==="小恩" ? "badge-xiao" : "badge-joint";
+      rows.push(`
+        <tr>
+          <td>${e.name}</td>
+          <td style="color:var(--muted)">${e.date}</td>
+          <td><span class="badge cat-${e.category}">${e.category}</span></td>
+          <td><span class="badge ${payerClass}">${e.payer||"—"}</span></td>
+          <td style="text-align:right" class="amount">${fmt(e.amount)}</td>
+        </tr>
+      `);
+    });
+  });
+  document.getElementById("joint-table").innerHTML = rows.join("");
+}
+
+// ── 家庭財報（取代模板D）───────────────────────────────────────
+function renderFamilyReport(){
+  const exp = filterByMonth(currentMonth);
+  const inc = INCOME.filter(i=>i.date.startsWith(currentMonth));
+  const {totalInc, totalExp, balance} = familyBalance(exp, inc);
+
+  document.getElementById("fam-income").textContent = fmt(totalInc);
+  document.getElementById("fam-expense").textContent = fmt(totalExp);
+  const balEl = document.getElementById("fam-balance");
+  balEl.textContent = balanceDisplay(balance);
+  balEl.setAttribute("style", balanceStyle(balance));
+
+  const cumul = familyBalance(EXPENSES, INCOME);
+  const cumulEl = document.getElementById("fam-cumul");
+  cumulEl.textContent = balanceDisplay(cumul.balance);
+  cumulEl.setAttribute("style", balanceStyle(cumul.balance));
+
+  const leoIncome = inc.filter(i=>i.person==="Leo").reduce((s,i)=>s+i.amount,0);
+  const xiaoIncome = inc.filter(i=>i.person==="小恩").reduce((s,i)=>s+i.amount,0);
+  const leoExp = exp.filter(e=>e.person==="Leo").reduce((s,e)=>s+e.amount,0);
+  const xiaoExp = exp.filter(e=>e.person==="小恩").reduce((s,e)=>s+e.amount,0);
+  const jointExp = exp.filter(e=>e.person==="共同").reduce((s,e)=>s+e.amount,0);
+
+  document.getElementById("fam-leo-income").textContent = fmt(leoIncome);
+  document.getElementById("fam-xiao-income").textContent = fmt(xiaoIncome);
+  document.getElementById("fam-personal").textContent = fmt(leoExp) + " / " + fmt(xiaoExp);
+  document.getElementById("fam-joint").textContent = fmt(jointExp);
+
+  const months = getMonths();
+  const trendData = months.map(m=>filterByMonth(m).reduce((s,e)=>s+e.amount,0));
+  if(famTrendChartInst) famTrendChartInst.destroy();
+  famTrendChartInst = new Chart(document.getElementById("fam-trend"), {
+    type:"line",
+    data:{labels:months.map(m=>m.replace("-","/")), datasets:[{data:trendData, borderColor:"#00c9a7", backgroundColor:"rgba(0,201,167,.1)", fill:true, tension:.4, pointRadius:3, borderWidth:2}]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99"}}, y:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99",callback:v=>"NT$"+v.toLocaleString()}}}}
+  });
+
+  const catMap = {};
+  exp.forEach(e=>{ catMap[e.category]=(catMap[e.category]||0)+e.amount; });
+  const cats = Object.keys(catMap);
+  const catAmounts = cats.map(c=>catMap[c]);
+  const catColors = cats.map(c=>CAT_COLORS[c]||"#888");
+  document.getElementById("fam-cat-total").textContent = fmt(totalExp);
+  document.getElementById("fam-cat-legend").innerHTML = cats.map((c,i)=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${catColors[i]}"></div>${c} ${totalExp?Math.round(catAmounts[i]/totalExp*100):0}%</div>`
+  ).join("");
+  if(famCatChartInst) famCatChartInst.destroy();
+  famCatChartInst = new Chart(document.getElementById("fam-cat"), {
+    type:"doughnut",
+    data:{labels:cats, datasets:[{data:catAmounts, backgroundColor:catColors, borderWidth:0}]},
+    options:{responsive:true, maintainAspectRatio:false, cutout:"70%", plugins:{legend:{display:false}}}
+  });
+
+  document.getElementById("fam-person-total").textContent = fmt(totalExp);
+  document.getElementById("fam-person-legend").innerHTML = [
+    {p:"Leo", v:leoExp}, {p:"小恩", v:xiaoExp}, {p:"共同", v:jointExp}
+  ].map(x=>`<div class="legend-item"><div class="legend-dot" style="background:${PERSON_COLORS[x.p]}"></div>${x.p} ${totalExp?Math.round(x.v/totalExp*100):0}%</div>`).join("");
+  if(famPersonChartInst) famPersonChartInst.destroy();
+  famPersonChartInst = new Chart(document.getElementById("fam-person"), {
+    type:"doughnut",
+    data:{labels:["Leo","小恩","共同"], datasets:[{data:[leoExp,xiaoExp,jointExp], backgroundColor:[PERSON_COLORS.Leo, PERSON_COLORS["小恩"], PERSON_COLORS["共同"]], borderWidth:0}]},
+    options:{responsive:true, maintainAspectRatio:false, cutout:"70%", plugins:{legend:{display:false}}}
+  });
+
+  const unsettledJoint = EXPENSES.filter(e=>e.person==="共同" && !e.settled);
+  const settle = settleUp(unsettledJoint);
+  const unsettledHalf = unsettledJoint.reduce((s,e)=>s+e.amount,0)/2;
+  document.getElementById("fam-settle-half").textContent = fmt(unsettledHalf);
+  document.getElementById("fam-settle-leo").textContent = fmt(settle.leoPaid);
+  document.getElementById("fam-settle-xiao").textContent = fmt(settle.xiaoPaid);
+  document.getElementById("fam-settle-text").textContent = settle.text;
+  document.getElementById("fam-settle-amount").textContent = fmt(settle.amount);
+  document.getElementById("fam-settle-result").className = "settle-result" + (settle.owe?" owe":"");
+
+  const rows = [...exp].sort((a,b)=>b.date.localeCompare(a.date)).map(e=>{
+    const personBadge = e.person==="Leo"?"badge-leo":e.person==="小恩"?"badge-xiao":"badge-joint";
+    const payerCell = e.person==="共同"
+      ? `<span class="badge ${e.payer==="Leo"?"badge-leo":"badge-xiao"}">${e.payer||"—"}</span>`
+      : "";
+    return `
+      <tr>
+        <td style="color:var(--muted)">${e.date}</td>
+        <td>${e.name}</td>
+        <td><span class="badge cat-${e.category}">${e.category}</span></td>
+        <td><span class="badge ${personBadge}">${e.person}</span></td>
+        <td>${payerCell}</td>
+        <td style="text-align:right" class="amount">${fmt(e.amount)}</td>
+      </tr>
+    `;
+  });
+  document.getElementById("fam-table").innerHTML = rows.join("");
+}
+
 // ── Navigation ────────────────────────────────────────────────
 function showPage(id){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
   document.getElementById("page-"+id).classList.add("active");
   event.currentTarget.classList.add("active");
+  if(id==="leo") renderPersonReport("Leo");
+  else if(id==="xiao") renderPersonReport("小恩");
+  else if(id==="joint") renderJointReport();
+  else if(id==="family") renderFamilyReport();
 }
 
 init();
