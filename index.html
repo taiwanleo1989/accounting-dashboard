@@ -8,28 +8,35 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#0b0f1a;
-  --bg2:#111827;
-  --bg3:#1a2236;
-  --card:#141d2e;
-  --card2:#1c2840;
-  --border:#1e2d45;
-  --text:#e8eaf0;
-  --muted:#6b7a99;
-  --accent:#00c9a7;
-  --accent2:#0ea5e9;
-  --gold:#f5a623;
-  --red:#ef4444;
-  --green:#22c55e;
+  --bg:#FBFCFD;
+  --bg2:#FBFCFD;
+  --bg3:#F3F7F9;
+  --card:#E4F0F5;
+  --card2:#FBF1DD;
+  --border:#E3ECF2;
+  --text:#365A6B;
+  --muted:#6B98AC;
+  --accent:#4A7A8D;
+  --accent2:#5B8CA0;
+  --gold:#9C8140;
+  --red:#c0392b;
+  --green:#3b8a5e;
   --purple:#8b5cf6;
   --pink:#ec4899;
   --orange:#f97316;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
 /* Sidebar */
-.sidebar{width:220px;min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;flex-shrink:0;position:fixed;top:0;left:0;height:100vh}
+.sidebar{width:220px;min-height:100vh;background:#FFFFFF;border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;flex-shrink:0;position:fixed;top:0;left:0;height:100vh;transition:width .15s}
 .logo{padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.logo-icon{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#000;font-weight:700}
+.sidebar-toggle{margin-left:auto;width:24px;height:24px;border:1px solid var(--border);background:var(--bg3);border-radius:6px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sidebar-toggle:hover{color:var(--text);border-color:var(--accent)}
+.sidebar.collapsed{width:60px}
+.sidebar.collapsed .logo-text,.sidebar.collapsed .nav-item span,.sidebar.collapsed .sidebar-footer{display:none}
+.sidebar.collapsed ~ .main{margin-left:60px}
+.sidebar.collapsed .logo{justify-content:center}
+.sidebar.collapsed .sidebar-toggle{margin-left:0}
+.logo-icon{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:700}
 .logo-text{font-size:15px;font-weight:600;color:var(--text)}
 .nav{flex:1;padding:12px 10px}
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:14px;margin-bottom:2px;transition:all .15s}
@@ -51,9 +58,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .page-sub{font-size:13px;color:var(--muted);margin-top:4px}
 /* Stats row */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
-.stat-label{font-size:12px;color:var(--muted);margin-bottom:8px}
-.stat-value{font-size:22px;font-weight:700;color:var(--text)}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.stat-card.yellow{background:var(--card2)}
+.stat-card.yellow .stat-label{color:#B79A5C}
+.stat-card.yellow .stat-value{color:#6E5A26}
+.stat-label{font-size:11px;color:var(--muted);margin-bottom:6px}
+.stat-value{font-size:15px;font-weight:700;color:var(--text)}
 .stat-value.accent{color:var(--accent)}
 .stat-value.gold{color:var(--gold)}
 .stat-delta{font-size:11px;margin-top:4px}
@@ -86,22 +96,24 @@ tr:hover td{background:var(--bg3)}
 /* Badge */
 .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500}
 /* Member badge */
-.badge-leo{background:rgba(14,165,233,.15);color:#38bdf8}
-.badge-xiao{background:rgba(34,197,94,.15);color:#4ade80}
-.badge-joint{background:rgba(245,166,35,.15);color:#f5a623}
+.badge-leo{background:#E4F0F5;color:#4A7A8D}
+.badge-xiao{background:#FBF1DD;color:#9C8140}
+.badge-joint{background:#EFF5F8;color:#5B8CA0}
+.badge-active{background:#E1F0E6;color:#2F7A50}
+.badge-inactive{background:#EEECE7;color:#8A867C}
 /* Category colors */
-.cat-餐飲{background:rgba(239,68,68,.15);color:#f87171}
-.cat-交通{background:rgba(14,165,233,.15);color:#38bdf8}
-.cat-購物{background:rgba(139,92,246,.15);color:#a78bfa}
-.cat-住宅{background:rgba(245,166,35,.15);color:#f5a623}
-.cat-娛樂{background:rgba(236,72,153,.15);color:#f472b6}
-.cat-醫療{background:rgba(249,115,22,.15);color:#fb923c}
-.cat-教育{background:rgba(0,201,167,.15);color:#00c9a7}
-.cat-其他{background:rgba(107,122,153,.15);color:#6b7a99}
+.cat-餐飲{background:#FBE4E2;color:#B25349}
+.cat-交通{background:#E4F0F5;color:#4A7A8D}
+.cat-購物{background:#EEE7FA;color:#7C5CB8}
+.cat-住宅{background:#FBF1DD;color:#9C8140}
+.cat-娛樂{background:#FCE7EF;color:#B8547E}
+.cat-醫療{background:#FDEEE1;color:#B26A2E}
+.cat-教育{background:#E1F0E9;color:#2F8067}
+.cat-其他{background:#F0F0EC;color:#7C7A70}
 /* Month selector */
 .month-bar{display:flex;align-items:center;gap:12px;margin-bottom:20px}
 .month-btn{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:13px;cursor:pointer;transition:all .15s}
-.month-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,201,167,.08)}
+.month-btn.active{border-color:var(--accent);color:var(--accent);background:#E4F0F5}
 /* Person filter */
 .filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .filter-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s}
@@ -127,17 +139,45 @@ tr:hover td{background:var(--bg3)}
 .settle-title{font-size:14px;font-weight:600;margin-bottom:10px;color:var(--gold)}
 .settle-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
 .settle-row:last-child{border:none}
-.settle-result{border-radius:8px;padding:12px 16px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;background:rgba(34,197,94,.08);border:1px solid var(--green)}
-.settle-result.owe{background:rgba(239,68,68,.08);border-color:var(--red)}
+.settle-result{border-radius:8px;padding:12px 16px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;background:#E1F0E6;border:1px solid var(--green)}
+.settle-result.owe{background:#FBE4E2;border-color:var(--red)}
 .settle-result span:first-child{font-size:13px;font-weight:600}
 .settle-result span:last-child{font-size:20px;font-weight:700}
+/* Overview layout */
+.overview-layout{display:grid;grid-template-columns:1fr 380px;gap:16px;margin-bottom:20px}
+.upcoming-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.upcoming-row:last-child{border:none}
+.upcoming-name{font-size:13px;font-weight:600;color:var(--text)}
+.upcoming-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.upcoming-amount{font-size:14px;font-weight:700;text-align:right}
+.upcoming-days{font-size:11px;color:var(--gold);font-weight:600}
+/* Split-even grid (income page) */
+.charts-row.split-even{grid-template-columns:1fr 1fr}
+/* Bottom nav (mobile) */
+.bottom-nav{display:none}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);cursor:pointer;font-size:10px}
+.bn-item svg{width:20px;height:20px}
+.bn-item.active{color:var(--accent)}
+.more-sheet{display:none;position:fixed;left:0;right:0;bottom:56px;background:#fff;border-top:1px solid var(--border);border-radius:16px 16px 0 0;padding:10px;z-index:60;box-shadow:0 -4px 16px rgba(54,90,107,.12)}
+.more-sheet.open{display:block}
+.more-sheet-item{padding:12px 16px;font-size:14px;color:var(--text);border-radius:8px;cursor:pointer}
+.more-sheet-item:active{background:var(--bg3)}
 /* Responsive */
-@media(max-width:900px){
-  .sidebar{width:60px}
-  .logo-text,.nav-item span,.sidebar-footer{display:none}
-  .main{margin-left:60px;padding:20px 16px}
-  .stats-row{grid-template-columns:1fr 1fr}
-  .charts-row{grid-template-columns:1fr}
+@media(max-width:640px){
+  .sidebar{display:none}
+  .main{margin-left:0;padding:16px;padding-bottom:76px}
+  .stats-row{grid-template-columns:1fr}
+  .charts-row,.charts-row.split-even{grid-template-columns:1fr}
+  .overview-layout{grid-template-columns:1fr}
+  .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:56px;background:#fff;border-top:1px solid var(--border);z-index:50;align-items:stretch}
+  .table-card table,.table-card thead,.table-card tbody,.table-card th,.table-card td,.table-card tr{display:block}
+  .table-card thead tr{display:none}
+  .table-card tbody tr{border:1px solid var(--border);border-radius:10px;margin-bottom:10px;padding:8px 12px}
+  .table-card tbody tr.group-row{border:none;padding:4px 0 4px 4px;margin-bottom:4px}
+  .table-card td{border:none!important;padding:4px 0;display:flex;justify-content:space-between;align-items:center}
+  .table-card td::before{content:attr(data-label);color:var(--muted);font-size:11px;font-weight:500;margin-right:8px}
+  .table-card tr.group-row td::before{display:none}
+  .table-card tr.group-row td{display:block}
 }
 </style>
 </head>
@@ -147,6 +187,9 @@ tr:hover td{background:var(--bg3)}
   <div class="logo">
     <div class="logo-icon">F</div>
     <span class="logo-text">Finance OS</span>
+    <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="收合選單">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
   </div>
   <div class="nav">
     <div class="nav-item active" onclick="showPage('overview')">
@@ -188,6 +231,35 @@ tr:hover td{background:var(--bg3)}
   </div>
 </nav>
 
+<nav class="bottom-nav">
+  <div class="bn-item active" onclick="showPage('overview')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span>總覽</span>
+  </div>
+  <div class="bn-item" onclick="showPage('budget')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    <span>記帳</span>
+  </div>
+  <div class="bn-item" onclick="showPage('leo')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+    <span>Leo</span>
+  </div>
+  <div class="bn-item" onclick="showPage('xiao')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+    <span>小恩</span>
+  </div>
+  <div class="bn-item" onclick="toggleMoreSheet()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+    <span>更多</span>
+  </div>
+</nav>
+<div class="more-sheet" id="moreSheet">
+  <div class="more-sheet-item" onclick="showPage('joint');toggleMoreSheet()">共同財報</div>
+  <div class="more-sheet-item" onclick="showPage('family');toggleMoreSheet()">家庭財報</div>
+  <div class="more-sheet-item" onclick="showPage('income');toggleMoreSheet()">收入管理</div>
+  <div class="more-sheet-item" onclick="showPage('recurring');toggleMoreSheet()">固定支出</div>
+</div>
+
 <main class="main">
 
   <!-- 總覽 -->
@@ -217,41 +289,53 @@ tr:hover td{background:var(--bg3)}
       </div>
     </div>
 
-    <div class="charts-row">
-      <div class="chart-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-          <div class="chart-title">月度支出趨勢</div>
-          <div class="toggle-group">
-            <button class="toggle-btn active" onclick="setTrendView('month',this)">月度</button>
-            <button class="toggle-btn" onclick="setTrendView('person',this)">成員</button>
+    <div class="overview-layout">
+      <div class="overview-main">
+        <div class="charts-row">
+          <div class="chart-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <div class="chart-title">月度支出趨勢</div>
+              <div class="toggle-group">
+                <button class="toggle-btn active" onclick="setTrendView('month',this)">月度</button>
+                <button class="toggle-btn" onclick="setTrendView('person',this)">成員</button>
+              </div>
+            </div>
+            <div class="chart-sub">點擊柱狀圖查看明細</div>
+            <div class="chart-wrap"><canvas id="trendChart" role="img" aria-label="月度支出趨勢"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">分類佔比</div>
+            <div class="legend" id="cat-legend"></div>
+            <div class="donut-wrap">
+              <div class="chart-wrap"><canvas id="catChart" role="img" aria-label="分類支出圓餅圖"></canvas></div>
+              <div class="donut-center">
+                <div class="donut-total" id="donut-total">—</div>
+                <div class="donut-label">總計</div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="chart-sub">點擊柱狀圖查看明細</div>
-        <div class="chart-wrap"><canvas id="trendChart" role="img" aria-label="月度支出趨勢"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">分類佔比</div>
-        <div class="legend" id="cat-legend"></div>
-        <div class="donut-wrap">
-          <div class="chart-wrap"><canvas id="catChart" role="img" aria-label="分類支出圓餅圖"></canvas></div>
-          <div class="donut-center">
-            <div class="donut-total" id="donut-total">—</div>
-            <div class="donut-label">總計</div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <div class="table-card">
-      <div class="table-header">
-        <div class="table-title">最新消費</div>
-        <span style="font-size:12px;color:var(--muted)">最近 10 筆</span>
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">最新消費</div>
+            <span style="font-size:12px;color:var(--muted)">最近 10 筆</span>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>日期</th><th>項目</th><th>類別</th><th>成員</th><th style="text-align:right">金額</th></tr></thead>
+              <tbody id="recent-table"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
-      <div class="table-scroll">
-        <table>
-          <thead><tr><th>日期</th><th>項目</th><th>類別</th><th>成員</th><th style="text-align:right">金額</th></tr></thead>
-          <tbody id="recent-table"></tbody>
-        </table>
+
+      <div class="table-card" id="upcoming-bills-card">
+        <div class="table-header">
+          <div class="table-title">即將扣款</div>
+          <span style="font-size:12px;color:var(--muted)">10 天內</span>
+        </div>
+        <div id="upcoming-bills-list"></div>
       </div>
     </div>
   </div>
@@ -529,26 +613,28 @@ tr:hover td{background:var(--bg3)}
       <div class="stat-card"><div class="stat-label">小恩 收入</div><div class="stat-value" style="color:var(--green)" id="inc-xiao">—</div></div>
       <div class="stat-card"><div class="stat-label">筆數</div><div class="stat-value" id="inc-count">—</div></div>
     </div>
-    <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-title">收入類型佔比</div>
-      <div class="legend" id="inc-type-legend"></div>
-      <div class="donut-wrap">
-        <div class="chart-wrap"><canvas id="inc-type-chart"></canvas></div>
-        <div class="donut-center"><div class="donut-total" id="inc-donut-total">—</div><div class="donut-label">總計</div></div>
+    <div class="charts-row split-even">
+      <div class="chart-card">
+        <div class="chart-title">收入類型佔比</div>
+        <div class="legend" id="inc-type-legend"></div>
+        <div class="donut-wrap">
+          <div class="chart-wrap"><canvas id="inc-type-chart"></canvas></div>
+          <div class="donut-center"><div class="donut-total" id="inc-donut-total">—</div><div class="donut-label">總計</div></div>
+        </div>
       </div>
-    </div>
-    <div class="table-card">
-      <div class="table-header"><div class="table-title">收入記錄</div></div>
-      <div class="filter-bar">
-        <button class="filter-btn active" onclick="setIncomePersonFilter('all',this)">全部</button>
-        <button class="filter-btn" onclick="setIncomePersonFilter('Leo',this)">Leo</button>
-        <button class="filter-btn" onclick="setIncomePersonFilter('小恩',this)">小恩</button>
-      </div>
-      <div class="table-scroll">
-        <table>
-          <thead><tr><th>日期</th><th>項目</th><th>類型</th><th>成員</th><th style="text-align:right">金額</th></tr></thead>
-          <tbody id="inc-table"></tbody>
-        </table>
+      <div class="table-card">
+        <div class="table-header"><div class="table-title">收入記錄</div></div>
+        <div class="filter-bar">
+          <button class="filter-btn active" onclick="setIncomePersonFilter('all',this)">全部</button>
+          <button class="filter-btn" onclick="setIncomePersonFilter('Leo',this)">Leo</button>
+          <button class="filter-btn" onclick="setIncomePersonFilter('小恩',this)">小恩</button>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>日期</th><th>項目</th><th>類型</th><th>成員</th><th style="text-align:right">金額</th></tr></thead>
+            <tbody id="inc-table"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -599,11 +685,13 @@ let RECURRING = [];
 // ─────────────────────────────────────────────────────────────
 
 const CAT_COLORS = {
-  "餐飲":"#ef4444","交通":"#0ea5e9","購物":"#8b5cf6",
-  "住宅":"#f5a623","娛樂":"#ec4899","醫療":"#f97316",
-  "教育":"#00c9a7","其他":"#6b7a99"
+  "餐飲":"#B25349","交通":"#4A7A8D","購物":"#7C5CB8",
+  "住宅":"#9C8140","娛樂":"#B8547E","醫療":"#B26A2E",
+  "教育":"#2F8067","其他":"#7C7A70"
 };
-const PERSON_COLORS = {"Leo":"#0ea5e9","小恩":"#22c55e","共同":"#f5a623"};
+const PERSON_COLORS = {"Leo":"#4A7A8D","小恩":"#9C8140","共同":"#5B8CA0"};
+const CHART_GRID = "rgba(54,90,107,0.08)";
+const CHART_TICK = "#6B98AC";
 
 let currentMonth = "";
 let currentPersonFilter = "all";
@@ -639,6 +727,22 @@ function settleUp(jointExpenses){
 function getMonths(){
   const months = [...new Set(EXPENSES.map(e => e.date.slice(0,7)))].sort();
   return months;
+}
+
+function getFullYearMonths(){
+  const y = new Date().getFullYear();
+  return Array.from({length:12}, (_,i)=>`${y}-${String(i+1).padStart(2,"0")}`);
+}
+
+function getUpcomingBills(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  return RECURRING.filter(r=>r.active && r.dueDay).map(r=>{
+    let due = new Date(today.getFullYear(), today.getMonth(), r.dueDay);
+    due.setHours(0,0,0,0);
+    if(due < today) due = new Date(today.getFullYear(), today.getMonth()+1, r.dueDay);
+    const daysLeft = Math.round((due-today)/86400000);
+    return {...r, dueDate:due, daysLeft};
+  }).filter(r=>r.daysLeft>=0 && r.daysLeft<=10).sort((a,b)=>a.daysLeft-b.daysLeft);
 }
 
 function filterByMonth(month){ return EXPENSES.filter(e => e.date.startsWith(month)); }
@@ -719,7 +823,21 @@ async function refreshData(){
 
 // ── 初始化 ───────────────────────────────────────────────────
 function init(){
+  initSidebarState();
   refreshData();
+}
+
+function toggleSidebar(){
+  const collapsed = document.querySelector(".sidebar").classList.toggle("collapsed");
+  localStorage.setItem("sidebarCollapsed", collapsed ? "1" : "0");
+}
+
+function initSidebarState(){
+  if(localStorage.getItem("sidebarCollapsed")==="1") document.querySelector(".sidebar").classList.add("collapsed");
+}
+
+function toggleMoreSheet(){
+  document.getElementById("moreSheet").classList.toggle("open");
 }
 
 function buildMonthBar(months){
@@ -770,8 +888,8 @@ function renderOverview(){
   document.getElementById("ov-joint").textContent = fmt(joint);
   document.getElementById("donut-total").textContent = fmt(total);
 
-  // Trend chart (monthly)
-  const months = getMonths();
+  // Trend chart (Jan-Dec of current year, missing months = 0)
+  const months = getFullYearMonths();
   const monthTotals = months.map(m => filterByMonth(m).reduce((s,e)=>s+e.amount,0));
 
   if(trendChartInst) trendChartInst.destroy();
@@ -782,7 +900,7 @@ function renderOverview(){
       datasets:[{
         label:"總支出",
         data: monthTotals,
-        backgroundColor:"#00c9a7",
+        backgroundColor: months.map((_,i)=> i%2===0 ? "#A9CEDC" : "#F0DBA3"),
         borderRadius:6,
         barThickness:40
       }]
@@ -791,8 +909,8 @@ function renderOverview(){
       responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:false}},
       scales:{
-        x:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99",font:{size:12}}},
-        y:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99",font:{size:11},callback:v=>"NT$"+v.toLocaleString()}}
+        x:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,font:{size:12}}},
+        y:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,font:{size:11},callback:v=>"NT$"+v.toLocaleString()}}
       }
     }
   });
@@ -824,13 +942,40 @@ function renderOverview(){
   const tbody = document.getElementById("recent-table");
   tbody.innerHTML = sorted.map(e=>`
     <tr>
-      <td style="color:var(--muted)">${e.date}</td>
-      <td>${e.name}</td>
-      <td><span class="badge cat-${e.category}">${e.category}</span></td>
-      <td><span class="badge badge-${e.person==='Leo'?'leo':e.person==='小恩'?'xiao':'joint'}">${e.person}</span></td>
-      <td style="text-align:right" class="amount">${fmt(e.amount)}</td>
+      <td data-label="日期" style="color:var(--muted)">${e.date}</td>
+      <td data-label="項目">${e.name}</td>
+      <td data-label="類別"><span class="badge cat-${e.category}">${e.category}</span></td>
+      <td data-label="成員"><span class="badge badge-${e.person==='Leo'?'leo':e.person==='小恩'?'xiao':'joint'}">${e.person}</span></td>
+      <td data-label="金額" style="text-align:right" class="amount">${fmt(e.amount)}</td>
     </tr>
   `).join("");
+
+  renderUpcomingBills();
+}
+
+function renderUpcomingBills(){
+  const bills = getUpcomingBills();
+  const list = document.getElementById("upcoming-bills-list");
+  if(!bills.length){
+    list.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:8px 0">近期沒有即將扣款的項目</div>`;
+    return;
+  }
+  const pad = n=>String(n).padStart(2,"0");
+  list.innerHTML = bills.map(b=>{
+    const badgeClass = b.person==="Leo"?"badge-leo":b.person==="小恩"?"badge-xiao":"badge-joint";
+    return `
+      <div class="upcoming-row">
+        <div>
+          <div class="upcoming-name">${b.name}</div>
+          <div class="upcoming-meta">${b.dueDate.getFullYear()}-${pad(b.dueDate.getMonth()+1)}-${pad(b.dueDate.getDate())}　<span class="badge ${badgeClass}">${b.person}</span></div>
+        </div>
+        <div style="text-align:right">
+          <div class="upcoming-amount">${fmt(b.amount)}</div>
+          <div class="upcoming-days">${b.daysLeft===0?"今天":b.daysLeft+" 天後"}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
 }
 
 let trendView = "month";
@@ -855,8 +1000,8 @@ function setTrendView(view, btn){
         responsive:true, maintainAspectRatio:false,
         plugins:{legend:{display:false}},
         scales:{
-          x:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99"}},
-          y:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99",callback:v=>"NT$"+v.toLocaleString()}}
+          x:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK}},
+          y:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,callback:v=>"NT$"+v.toLocaleString()}}
         }
       }
     });
@@ -897,7 +1042,7 @@ function renderBudget(){
       indexAxis:"y", responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`NT$${ctx.parsed.x.toLocaleString()}`}}},
       scales:{
-        x:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99",callback:v=>"NT$"+v.toLocaleString()}},
+        x:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,callback:v=>"NT$"+v.toLocaleString()}},
         y:{grid:{display:false},ticks:{color:"#e8eaf0",font:{size:12}}}
       }
     }
@@ -912,7 +1057,7 @@ function renderBudget(){
   if(personChartInst) personChartInst.destroy();
   personChartInst = new Chart(document.getElementById("personChart"),{
     type:"doughnut",
-    data:{labels:["Leo","小恩","共同"], datasets:[{data:[leo,xiao,joint], backgroundColor:["#0ea5e9","#22c55e","#f5a623"], borderWidth:0}]},
+    data:{labels:["Leo","小恩","共同"], datasets:[{data:[leo,xiao,joint], backgroundColor:[PERSON_COLORS.Leo, PERSON_COLORS["小恩"], PERSON_COLORS["共同"]], borderWidth:0}]},
     options:{responsive:true, maintainAspectRatio:false, cutout:"70%", plugins:{legend:{display:false}}}
   });
 
@@ -926,11 +1071,11 @@ function renderBudgetTable(data){
   const tbody = document.getElementById("bud-table");
   tbody.innerHTML = filtered.map(e=>`
     <tr>
-      <td style="color:var(--muted)">${e.date}</td>
-      <td>${e.name}</td>
-      <td><span class="badge cat-${e.category}">${e.category}</span></td>
-      <td><span class="badge badge-${e.person==='Leo'?'leo':e.person==='小恩'?'xiao':'joint'}">${e.person}</span></td>
-      <td style="text-align:right" class="amount">${fmt(e.amount)}</td>
+      <td data-label="日期" style="color:var(--muted)">${e.date}</td>
+      <td data-label="項目">${e.name}</td>
+      <td data-label="類別"><span class="badge cat-${e.category}">${e.category}</span></td>
+      <td data-label="成員"><span class="badge badge-${e.person==='Leo'?'leo':e.person==='小恩'?'xiao':'joint'}">${e.person}</span></td>
+      <td data-label="金額" style="text-align:right" class="amount">${fmt(e.amount)}</td>
     </tr>
   `).join("");
 }
@@ -986,7 +1131,7 @@ function renderPersonReport(person){
     type:"bar",
     data:{labels:months.map(m=>m.replace("-","/")), datasets:[{data:trendData, backgroundColor:trendColor, borderRadius:6, barThickness:40}]},
     options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
-      scales:{x:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99"}}, y:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99",callback:v=>"NT$"+v.toLocaleString()}}}}
+      scales:{x:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK}}, y:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,callback:v=>"NT$"+v.toLocaleString()}}}}
   });
   if(isLeo) leoTrendChartInst = trendChart; else xiaoTrendChartInst = trendChart;
 
@@ -1011,10 +1156,10 @@ function renderPersonReport(person){
   const sorted = [...expAll].sort((a,b)=>b.date.localeCompare(a.date));
   document.getElementById(prefix+"-table").innerHTML = sorted.map(e=>`
     <tr>
-      <td style="color:var(--muted)">${e.date}</td>
-      <td>${e.name}</td>
-      <td><span class="badge cat-${e.category}">${e.category}</span></td>
-      <td style="text-align:right" class="amount">${fmt(e.amount)}</td>
+      <td data-label="日期" style="color:var(--muted)">${e.date}</td>
+      <td data-label="項目">${e.name}</td>
+      <td data-label="類別"><span class="badge cat-${e.category}">${e.category}</span></td>
+      <td data-label="金額" style="text-align:right" class="amount">${fmt(e.amount)}</td>
     </tr>
   `).join("");
 }
@@ -1057,9 +1202,9 @@ function renderJointReport(){
   if(jointTrendChartInst) jointTrendChartInst.destroy();
   jointTrendChartInst = new Chart(document.getElementById("joint-trend"), {
     type:"line",
-    data:{labels:months.map(m=>m.replace("-","/")), datasets:[{data:trendData, borderColor:"#f5a623", backgroundColor:"rgba(245,166,35,.1)", fill:true, tension:.4, pointRadius:3, borderWidth:2}]},
+    data:{labels:months.map(m=>m.replace("-","/")), datasets:[{data:trendData, borderColor:"#B79A5C", backgroundColor:"rgba(183,154,92,.15)", fill:true, tension:.4, pointRadius:3, borderWidth:2}]},
     options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
-      scales:{x:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99"}}, y:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99",callback:v=>"NT$"+v.toLocaleString()}}}}
+      scales:{x:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK}}, y:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,callback:v=>"NT$"+v.toLocaleString()}}}}
   });
 
   const groups = {};
@@ -1067,16 +1212,16 @@ function renderJointReport(){
   Object.values(groups).forEach(g=>g.sort((a,b)=>a.date.localeCompare(b.date)));
   const rows = [];
   Object.keys(groups).forEach(name=>{
-    rows.push(`<tr><td colspan="5" style="background:var(--bg3);color:var(--muted);font-weight:600;font-size:11px;padding:6px 12px">▸ ${name}</td></tr>`);
+    rows.push(`<tr class="group-row"><td colspan="5" style="background:var(--bg3);color:var(--muted);font-weight:600;font-size:11px;padding:6px 12px">▸ ${name}</td></tr>`);
     groups[name].forEach(e=>{
       const payerClass = e.payer==="Leo" ? "badge-leo" : e.payer==="小恩" ? "badge-xiao" : "badge-joint";
       rows.push(`
         <tr>
-          <td>${e.name}</td>
-          <td style="color:var(--muted)">${e.date}</td>
-          <td><span class="badge cat-${e.category}">${e.category}</span></td>
-          <td><span class="badge ${payerClass}">${e.payer||"—"}</span></td>
-          <td style="text-align:right" class="amount">${fmt(e.amount)}</td>
+          <td data-label="項目">${e.name}</td>
+          <td data-label="日期" style="color:var(--muted)">${e.date}</td>
+          <td data-label="類別"><span class="badge cat-${e.category}">${e.category}</span></td>
+          <td data-label="付款人"><span class="badge ${payerClass}">${e.payer||"—"}</span></td>
+          <td data-label="金額" style="text-align:right" class="amount">${fmt(e.amount)}</td>
         </tr>
       `);
     });
@@ -1117,9 +1262,9 @@ function renderFamilyReport(){
   if(famTrendChartInst) famTrendChartInst.destroy();
   famTrendChartInst = new Chart(document.getElementById("fam-trend"), {
     type:"line",
-    data:{labels:months.map(m=>m.replace("-","/")), datasets:[{data:trendData, borderColor:"#00c9a7", backgroundColor:"rgba(0,201,167,.1)", fill:true, tension:.4, pointRadius:3, borderWidth:2}]},
+    data:{labels:months.map(m=>m.replace("-","/")), datasets:[{data:trendData, borderColor:"#4A7A8D", backgroundColor:"rgba(74,122,141,.12)", fill:true, tension:.4, pointRadius:3, borderWidth:2}]},
     options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
-      scales:{x:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99"}}, y:{grid:{color:"rgba(255,255,255,0.05)"},ticks:{color:"#6b7a99",callback:v=>"NT$"+v.toLocaleString()}}}}
+      scales:{x:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK}}, y:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,callback:v=>"NT$"+v.toLocaleString()}}}}
   });
 
   const catMap = {};
@@ -1166,12 +1311,12 @@ function renderFamilyReport(){
       : "";
     return `
       <tr>
-        <td style="color:var(--muted)">${e.date}</td>
-        <td>${e.name}</td>
-        <td><span class="badge cat-${e.category}">${e.category}</span></td>
-        <td><span class="badge ${personBadge}">${e.person}</span></td>
-        <td>${payerCell}</td>
-        <td style="text-align:right" class="amount">${fmt(e.amount)}</td>
+        <td data-label="日期" style="color:var(--muted)">${e.date}</td>
+        <td data-label="項目">${e.name}</td>
+        <td data-label="類別"><span class="badge cat-${e.category}">${e.category}</span></td>
+        <td data-label="成員"><span class="badge ${personBadge}">${e.person}</span></td>
+        <td data-label="付款人">${payerCell}</td>
+        <td data-label="金額" style="text-align:right" class="amount">${fmt(e.amount)}</td>
       </tr>
     `;
   });
@@ -1181,9 +1326,9 @@ function renderFamilyReport(){
 // ── Navigation ────────────────────────────────────────────────
 function showPage(id){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  document.querySelectorAll(".nav-item,.bn-item").forEach(n=>n.classList.remove("active"));
   document.getElementById("page-"+id).classList.add("active");
-  event.currentTarget.classList.add("active");
+  document.querySelectorAll(`.nav-item[onclick*="'${id}'"],.bn-item[onclick*="'${id}'"]`).forEach(n=>n.classList.add("active"));
   if(id==="leo") renderPersonReport("Leo");
   else if(id==="xiao") renderPersonReport("小恩");
   else if(id==="joint") renderJointReport();
@@ -1211,7 +1356,7 @@ function renderIncome(){
   document.getElementById("inc-xiao").textContent = fmt(xiao);
   document.getElementById("inc-count").textContent = monthData.length + " 筆";
 
-  const typeColors = {"薪資":"#0ea5e9","副業":"#8b5cf6","投資利息":"#f5a623"};
+  const typeColors = {"薪資":"#4A7A8D","副業":"#7C5CB8","投資利息":"#9C8140"};
   const typeMap = {};
   monthData.forEach(i=>{ typeMap[i.type]=(typeMap[i.type]||0)+i.amount; });
   const types = Object.keys(typeMap);
@@ -1233,11 +1378,11 @@ function renderIncome(){
     .sort((a,b)=>b.date.localeCompare(a.date));
   document.getElementById("inc-table").innerHTML = filtered.map(i=>`
     <tr>
-      <td style="color:var(--muted)">${i.date}</td>
-      <td>${i.name}</td>
-      <td>${i.type}</td>
-      <td><span class="badge ${i.person==='Leo'?'badge-leo':'badge-xiao'}">${i.person}</span></td>
-      <td style="text-align:right" class="amount">${fmt(i.amount)}</td>
+      <td data-label="日期" style="color:var(--muted)">${i.date}</td>
+      <td data-label="項目">${i.name}</td>
+      <td data-label="類型">${i.type}</td>
+      <td data-label="成員"><span class="badge ${i.person==='Leo'?'badge-leo':'badge-xiao'}">${i.person}</span></td>
+      <td data-label="金額" style="text-align:right" class="amount">${fmt(i.amount)}</td>
     </tr>
   `).join("");
 }
@@ -1266,13 +1411,13 @@ function renderRecurring(){
     const payerBadge = r.payer==="Leo"?"badge-leo":"badge-xiao";
     return `
       <tr>
-        <td style="color:var(--muted)">每月 ${r.dueDay ?? "—"} 號</td>
-        <td>${r.name}</td>
-        <td><span class="badge cat-${r.category}">${r.category}</span></td>
-        <td><span class="badge ${personBadge}">${r.person}</span></td>
-        <td><span class="badge ${payerBadge}">${r.payer||"—"}</span></td>
-        <td style="text-align:right" class="amount">${fmt(r.amount)}</td>
-        <td>${r.active ? '<span class="badge" style="background:rgba(34,197,94,.15);color:#4ade80">啟用中</span>' : '<span class="badge" style="background:rgba(107,122,153,.15);color:#6b7a99">已停用</span>'}</td>
+        <td data-label="扣款日" style="color:var(--muted)">每月 ${r.dueDay ?? "—"} 號</td>
+        <td data-label="項目">${r.name}</td>
+        <td data-label="類別"><span class="badge cat-${r.category}">${r.category}</span></td>
+        <td data-label="成員"><span class="badge ${personBadge}">${r.person}</span></td>
+        <td data-label="付款人"><span class="badge ${payerBadge}">${r.payer||"—"}</span></td>
+        <td data-label="金額" style="text-align:right" class="amount">${fmt(r.amount)}</td>
+        <td data-label="狀態">${r.active ? '<span class="badge badge-active">啟用中</span>' : '<span class="badge badge-inactive">已停用</span>'}</td>
       </tr>
     `;
   }).join("");
