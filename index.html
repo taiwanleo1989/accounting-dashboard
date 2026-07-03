@@ -591,6 +591,19 @@ tr:hover td{background:var(--bg3)}
         </table>
       </div>
     </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">結算歷史</div>
+        <span style="font-size:12px;color:var(--muted)">已結清的共同支出，依結清日期分批</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>結清日期</th><th style="text-align:right">筆數</th><th style="text-align:right">總額</th><th style="text-align:right">Leo 墊付</th><th style="text-align:right">小恩 墊付</th><th>當次結算</th></tr></thead>
+          <tbody id="settle-history"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- 家庭 財報 -->
@@ -1310,10 +1323,10 @@ function renderPersonReport(person){
   if(isLeo){ if(leoTrendChartInst) leoTrendChartInst.destroy(); }
   else { if(xiaoTrendChartInst) xiaoTrendChartInst.destroy(); }
   const trendChart = new Chart(document.getElementById(prefix+"-trend"), {
-    type:"bar",
+    type:"line",
     data:{labels:months.map(m=>m.replace("-","/")), datasets:[
-      {type:"line", label:"收入", data:trendInc, borderColor:"#3b8a5e", backgroundColor:"rgba(59,138,94,.1)", tension:.4, pointRadius:3, borderWidth:2},
-      {type:"bar", label:"支出（含共同分攤）", data:trendExp, backgroundColor:trendColor, borderRadius:6, barThickness:26}
+      {label:"收入", data:trendInc, borderColor:"#3b8a5e", backgroundColor:"rgba(59,138,94,.08)", fill:true, tension:.4, pointRadius:3, borderWidth:2},
+      {label:"支出（含共同分攤）", data:trendExp, borderColor:trendColor, backgroundColor:isLeo?"rgba(14,165,233,.1)":"rgba(34,197,94,.1)", fill:true, tension:.4, pointRadius:3, borderWidth:2}
     ]},
     options:{responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:true, labels:{color:CHART_TICK, boxWidth:12, font:{size:11}}}},
@@ -1413,6 +1426,35 @@ function renderJointReport(){
     });
   });
   document.getElementById("joint-table").innerHTML = rows.join("");
+
+  // 結算歷史：已結清的共同支出依結清日期分批（不受上方篩選影響）
+  const settledJoint = EXPENSES.filter(e=>e.person==="共同" && e.settled);
+  const histEl = document.getElementById("settle-history");
+  if(!settledJoint.length){
+    histEl.innerHTML = `<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:14px">尚無結算記錄</td></tr>`;
+  } else {
+    const batches = {};
+    settledJoint.forEach(e=>{ (batches[e.settledDate || ""] ||= []).push(e); });
+    const keys = Object.keys(batches).sort((a,b)=>b.localeCompare(a));
+    histEl.innerHTML = keys.map(k=>{
+      const items = batches[k];
+      const total = items.reduce((s,e)=>s+e.amount,0);
+      const s = settleUp(items);
+      const label = k || "早期結清（未記錄日期）";
+      const resultText = s.owe ? `${s.text} ${fmt(s.amount)}` : "已平帳";
+      const names = items.map(e=>esc(e.name)).join("、");
+      return `
+        <tr>
+          <td data-label="結清日期"><span style="color:var(--text);font-weight:600;white-space:nowrap">${label}</span>
+            <div style="font-size:11px;color:var(--muted);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${names}</div></td>
+          <td data-label="筆數" style="text-align:right;color:var(--muted)">${items.length} 筆</td>
+          <td data-label="總額" style="text-align:right" class="amount">${fmt(total)}</td>
+          <td data-label="Leo 墊付" style="text-align:right;color:var(--accent2)">${fmt(s.leoPaid)}</td>
+          <td data-label="小恩 墊付" style="text-align:right;color:var(--green)">${fmt(s.xiaoPaid)}</td>
+          <td data-label="當次結算">${resultText}</td>
+        </tr>`;
+    }).join("");
+  }
 }
 
 // ── 家庭財報（取代模板D）───────────────────────────────────────

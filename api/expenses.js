@@ -51,6 +51,7 @@ export default async function handler(req, res) {
           amount: p["金額"]?.number || 0,
           payer: p["付款人"]?.select?.name || "",
           settled: p["是否結清"]?.checkbox ?? true,
+          settledDate: p["結清日期"]?.date?.start?.slice(0, 10) || "",
           note: p["備註"]?.rich_text?.[0]?.plain_text || "",
         };
       })
