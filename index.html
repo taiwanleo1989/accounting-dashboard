@@ -854,6 +854,7 @@ async function refreshData(){
 // ── 初始化 ───────────────────────────────────────────────────
 function init(){
   initSidebarState();
+  applyHashPage();
   refreshData();
 }
 
@@ -1379,7 +1380,15 @@ function showPage(id){
   else if(id==="family") renderFamilyReport();
   else if(id==="income") renderIncome();
   else if(id==="recurring") renderRecurring();
+  if(location.hash.slice(1) !== id) history.replaceState(null, "", "#"+id);
 }
+
+const PAGE_IDS = ["overview","budget","leo","xiao","joint","family","income","recurring"];
+function applyHashPage(){
+  const id = location.hash.slice(1);
+  if(PAGE_IDS.includes(id) && !document.getElementById("page-"+id).classList.contains("active")) showPage(id);
+}
+window.addEventListener("hashchange", applyHashPage);
 
 // ── 收入管理 ─────────────────────────────────────────────────
 function setIncomePersonFilter(p, btn){
