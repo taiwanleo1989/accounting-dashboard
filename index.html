@@ -713,12 +713,13 @@ let currentPersonFilter = "all";
 let jointIncludeSettled = false;
 let incomePersonFilter = "all";
 let recurringFilter = "all";
-let trendChartInst, catChartInst, budCatChartInst, personChartInst;
+let trendChartInst, budCatChartInst, personChartInst;
 let leoTrendChartInst, leoCatChartInst, xiaoTrendChartInst, xiaoCatChartInst;
 let jointTrendChartInst, famTrendChartInst, famCatChartInst, famPersonChartInst;
 let incTypeChartInst;
 
 function fmt(n){ return "NT$" + Math.round(n).toLocaleString(); }
+function esc(s){ const d = document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; }
 
 // ── 結餘計算（取代 system_prompt.md 的模板A-D結餘公式）────────────
 function balanceStyle(v){ return v>0 ? "color:var(--accent)" : v<0 ? "color:var(--red)" : "color:var(--muted)"; }
@@ -737,11 +738,6 @@ function settleUp(jointExpenses){
   const amount = Math.abs(diff)/2;
   const text = diff>0 ? "小恩 應還 Leo" : diff<0 ? "Leo 應還 小恩" : "已平帳 🎉";
   return { leoPaid, xiaoPaid, amount, text, owe: diff!==0 };
-}
-
-function getMonths(){
-  const months = [...new Set(EXPENSES.map(e => e.date.slice(0,7)))].sort();
-  return months;
 }
 
 function getFullYearMonths(){
@@ -917,7 +913,7 @@ function renderOverview(){
   tbody.innerHTML = sorted.map(e=>`
     <tr>
       <td data-label="日期" style="color:var(--muted)">${e.date}</td>
-      <td data-label="項目">${e.name}</td>
+      <td data-label="項目">${esc(e.name)}</td>
       <td data-label="類別"><span class="badge cat-${e.category}">${e.category}</span></td>
       <td data-label="成員"><span class="badge badge-${e.person==='Leo'?'leo':e.person==='小恩'?'xiao':'joint'}">${e.person}</span></td>
       <td data-label="金額" style="text-align:right" class="amount">${fmt(e.amount)}</td>
@@ -940,7 +936,7 @@ function renderUpcomingBills(){
     return `
       <div class="upcoming-row">
         <div>
-          <div class="upcoming-name">${b.name}</div>
+          <div class="upcoming-name">${esc(b.name)}</div>
           <div class="upcoming-meta">${b.dueDate.getFullYear()}-${pad(b.dueDate.getMonth()+1)}-${pad(b.dueDate.getDate())}　<span class="badge ${badgeClass}">${b.person}</span></div>
         </div>
         <div style="text-align:right">
@@ -1076,7 +1072,7 @@ function renderBudgetTable(data){
   tbody.innerHTML = filtered.map(e=>`
     <tr>
       <td data-label="日期" style="color:var(--muted)">${e.date}</td>
-      <td data-label="項目">${e.name}</td>
+      <td data-label="項目">${esc(e.name)}</td>
       <td data-label="類別"><span class="badge cat-${e.category}">${e.category}</span></td>
       <td data-label="成員"><span class="badge badge-${e.person==='Leo'?'leo':e.person==='小恩'?'xiao':'joint'}">${e.person}</span></td>
       <td data-label="金額" style="text-align:right" class="amount">${fmt(e.amount)}</td>
@@ -1126,7 +1122,7 @@ function renderPersonReport(person){
   cumulEl.textContent = balanceDisplay(cumulBalance);
   cumulEl.setAttribute("style", balanceStyle(cumulBalance));
 
-  const months = getMonths();
+  const months = getFullYearMonths();
   const trendData = months.map(m=>filterByMonth(m).filter(e=>e.person===person).reduce((s,e)=>s+e.amount,0));
   const trendColor = isLeo ? "#0ea5e9" : "#22c55e";
   if(isLeo){ if(leoTrendChartInst) leoTrendChartInst.destroy(); }
@@ -1161,7 +1157,7 @@ function renderPersonReport(person){
   document.getElementById(prefix+"-table").innerHTML = sorted.map(e=>`
     <tr>
       <td data-label="日期" style="color:var(--muted)">${e.date}</td>
-      <td data-label="項目">${e.name}</td>
+      <td data-label="項目">${esc(e.name)}</td>
       <td data-label="類別"><span class="badge cat-${e.category}">${e.category}</span></td>
       <td data-label="金額" style="text-align:right" class="amount">${fmt(e.amount)}</td>
     </tr>
@@ -1197,7 +1193,7 @@ function renderJointReport(){
   document.getElementById("settle-amount").textContent = fmt(amount);
   document.getElementById("settle-result").className = "settle-result" + (owe?" owe":"");
 
-  const months = getMonths();
+  const months = getFullYearMonths();
   const trendData = months.map(m=>{
     let d = EXPENSES.filter(e=>e.person==="共同" && e.date.startsWith(m));
     if(!jointIncludeSettled) d = d.filter(e=>!e.settled);
@@ -1216,12 +1212,12 @@ function renderJointReport(){
   Object.values(groups).forEach(g=>g.sort((a,b)=>a.date.localeCompare(b.date)));
   const rows = [];
   Object.keys(groups).forEach(name=>{
-    rows.push(`<tr class="group-row"><td colspan="5" style="background:var(--bg3);color:var(--muted);font-weight:600;font-size:11px;padding:6px 12px">▸ ${name}</td></tr>`);
+    rows.push(`<tr class="group-row"><td colspan="5" style="background:var(--bg3);color:var(--muted);font-weight:600;font-size:11px;padding:6px 12px">▸ ${esc(name)}</td></tr>`);
     groups[name].forEach(e=>{
       const payerClass = e.payer==="Leo" ? "badge-leo" : e.payer==="小恩" ? "badge-xiao" : "badge-joint";
       rows.push(`
         <tr>
-          <td data-label="項目">${e.name}</td>
+          <td data-label="項目">${esc(e.name)}</td>
           <td data-label="日期" style="color:var(--muted)">${e.date}</td>
           <td data-label="類別"><span class="badge cat-${e.category}">${e.category}</span></td>
           <td data-label="付款人"><span class="badge ${payerClass}">${e.payer||"—"}</span></td>
@@ -1261,7 +1257,7 @@ function renderFamilyReport(){
   document.getElementById("fam-personal").textContent = fmt(leoExp) + " / " + fmt(xiaoExp);
   document.getElementById("fam-joint").textContent = fmt(jointExp);
 
-  const months = getMonths();
+  const months = getFullYearMonths();
   const trendData = months.map(m=>filterByMonth(m).reduce((s,e)=>s+e.amount,0));
   if(famTrendChartInst) famTrendChartInst.destroy();
   famTrendChartInst = new Chart(document.getElementById("fam-trend"), {
@@ -1316,7 +1312,7 @@ function renderFamilyReport(){
     return `
       <tr>
         <td data-label="日期" style="color:var(--muted)">${e.date}</td>
-        <td data-label="項目">${e.name}</td>
+        <td data-label="項目">${esc(e.name)}</td>
         <td data-label="類別"><span class="badge cat-${e.category}">${e.category}</span></td>
         <td data-label="成員"><span class="badge ${personBadge}">${e.person}</span></td>
         <td data-label="付款人">${payerCell}</td>
@@ -1383,7 +1379,7 @@ function renderIncome(){
   document.getElementById("inc-table").innerHTML = filtered.map(i=>`
     <tr>
       <td data-label="日期" style="color:var(--muted)">${i.date}</td>
-      <td data-label="項目">${i.name}</td>
+      <td data-label="項目">${esc(i.name)}</td>
       <td data-label="類型">${i.type}</td>
       <td data-label="成員"><span class="badge ${i.person==='Leo'?'badge-leo':'badge-xiao'}">${i.person}</span></td>
       <td data-label="金額" style="text-align:right" class="amount">${fmt(i.amount)}</td>
@@ -1416,7 +1412,7 @@ function renderRecurring(){
     return `
       <tr>
         <td data-label="扣款日" style="color:var(--muted)">每月 ${r.dueDay ?? "—"} 號</td>
-        <td data-label="項目">${r.name}</td>
+        <td data-label="項目">${esc(r.name)}</td>
         <td data-label="類別"><span class="badge cat-${r.category}">${r.category}</span></td>
         <td data-label="成員"><span class="badge ${personBadge}">${r.person}</span></td>
         <td data-label="付款人"><span class="badge ${payerBadge}">${r.payer||"—"}</span></td>
