@@ -175,6 +175,20 @@ tr:hover td{background:var(--bg3)}
 .upcoming-meta{font-size:11px;color:var(--muted);margin-top:2px}
 .upcoming-amount{font-size:14px;font-weight:700;text-align:right}
 .upcoming-days{font-size:11px;color:var(--gold);font-weight:600}
+/* 結算提醒橫幅（總覽） */
+.alert-banner{display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.25);border-radius:12px;padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:14px;cursor:pointer}
+.alert-banner .alert-link{font-size:12px;white-space:nowrap;text-decoration:underline}
+/* 預算執行進度條 */
+.bud-bar-row{margin-bottom:12px}
+.bud-bar-row:last-child{margin-bottom:0}
+.bud-bar-top{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;margin-bottom:4px;gap:8px}
+.bud-bar-name{font-weight:600;color:var(--text)}
+.bud-bar-nums{color:var(--muted);text-align:right}
+.bud-bar-track{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.bud-bar-fill{height:100%;border-radius:4px}
+/* 固定支出入帳狀態 */
+.badge-paid{background:rgba(59,138,94,.14);color:var(--green)}
+.badge-pending{background:rgba(156,129,64,.16);color:var(--accent)}
 /* Split-even grid (income page) */
 .charts-row.split-even{grid-template-columns:1fr 1fr}
 /* Four-panel grid (family report) */
@@ -312,11 +326,14 @@ tr:hover td{background:var(--bg3)}
       <div class="page-sub">家庭支出總覽</div>
     </div>
 
+    <div id="settle-alert"></div>
+
     <div class="stats-row" id="overview-stats">
       <div class="stat-card">
         <div class="stat-label">本月總支出</div>
         <div class="stat-value accent" id="ov-month-total">—</div>
         <div class="stat-sub" id="ov-month-count">—</div>
+        <div class="stat-sub" id="ov-budget-sub" style="display:none"></div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Leo 支出</div>
@@ -402,6 +419,12 @@ tr:hover td{background:var(--bg3)}
       </div>
     </div>
 
+    <div class="chart-card" id="budget-exec-card" style="display:none;margin-bottom:16px">
+      <div class="chart-title">預算執行</div>
+      <div class="chart-sub">所選月份實際支出 vs 每月預算（在 Notion「預算設定」維護，或在 claude.ai 說「設定預算 餐飲 8000」）</div>
+      <div id="budget-bars" style="margin-top:12px"></div>
+    </div>
+
     <div class="charts-row" style="margin-bottom:16px">
       <div class="chart-card">
         <div class="chart-title">支出明細圖</div>
@@ -451,7 +474,7 @@ tr:hover td{background:var(--bg3)}
       <div class="stat-card"><div class="stat-label">收入合計</div><div class="stat-value" style="color:var(--green)" id="leo-income">—</div></div>
       <div class="stat-card"><div class="stat-label">個人支出</div><div class="stat-value" id="leo-expense">—</div></div>
       <div class="stat-card"><div class="stat-label">共同分攤</div><div class="stat-value gold" id="leo-jointhalf">—</div></div>
-      <div class="stat-card"><div class="stat-label">本期結餘</div><div class="stat-value" id="leo-balance">—</div></div>
+      <div class="stat-card"><div class="stat-label">本期結餘</div><div class="stat-value" id="leo-balance">—</div><div class="stat-sub" id="leo-savings">—</div></div>
       <div class="stat-card"><div class="stat-label">消費筆數</div><div class="stat-value" id="leo-count">—</div></div>
       <div class="stat-card"><div class="stat-label">最高單筆</div><div class="stat-value" id="leo-max">—</div></div>
       <div class="stat-card"><div class="stat-label">日均消費</div><div class="stat-value" id="leo-avg">—</div></div>
@@ -459,7 +482,8 @@ tr:hover td{background:var(--bg3)}
     </div>
     <div class="charts-row">
       <div class="chart-card">
-        <div class="chart-title">月度支出趨勢</div>
+        <div class="chart-title">月度收支趨勢</div>
+        <div class="chart-sub">收入 vs 支出（含共同分攤）</div>
         <div class="chart-wrap"><canvas id="leo-trend"></canvas></div>
       </div>
       <div class="chart-card">
@@ -493,7 +517,7 @@ tr:hover td{background:var(--bg3)}
       <div class="stat-card"><div class="stat-label">收入合計</div><div class="stat-value" style="color:var(--green)" id="xiao-income">—</div></div>
       <div class="stat-card"><div class="stat-label">個人支出</div><div class="stat-value" id="xiao-expense">—</div></div>
       <div class="stat-card"><div class="stat-label">共同分攤</div><div class="stat-value gold" id="xiao-jointhalf">—</div></div>
-      <div class="stat-card"><div class="stat-label">本期結餘</div><div class="stat-value" id="xiao-balance">—</div></div>
+      <div class="stat-card"><div class="stat-label">本期結餘</div><div class="stat-value" id="xiao-balance">—</div><div class="stat-sub" id="xiao-savings">—</div></div>
       <div class="stat-card"><div class="stat-label">消費筆數</div><div class="stat-value" id="xiao-count">—</div></div>
       <div class="stat-card"><div class="stat-label">最高單筆</div><div class="stat-value" id="xiao-max">—</div></div>
       <div class="stat-card"><div class="stat-label">日均消費</div><div class="stat-value" id="xiao-avg">—</div></div>
@@ -501,7 +525,8 @@ tr:hover td{background:var(--bg3)}
     </div>
     <div class="charts-row">
       <div class="chart-card">
-        <div class="chart-title">月度支出趨勢</div>
+        <div class="chart-title">月度收支趨勢</div>
+        <div class="chart-sub">收入 vs 支出（含共同分攤）</div>
         <div class="chart-wrap"><canvas id="xiao-trend"></canvas></div>
       </div>
       <div class="chart-card">
@@ -578,7 +603,7 @@ tr:hover td{background:var(--bg3)}
     <div class="stats-row">
       <div class="stat-card"><div class="stat-label">家庭總收入</div><div class="stat-value" style="color:var(--green)" id="fam-income">—</div></div>
       <div class="stat-card"><div class="stat-label">家庭總支出</div><div class="stat-value" style="color:var(--red)" id="fam-expense">—</div></div>
-      <div class="stat-card"><div class="stat-label">家庭結餘</div><div class="stat-value" id="fam-balance">—</div></div>
+      <div class="stat-card"><div class="stat-label">家庭結餘</div><div class="stat-value" id="fam-balance">—</div><div class="stat-sub" id="fam-savings">—</div></div>
       <div class="stat-card"><div class="stat-label">累計結餘</div><div class="stat-value" id="fam-cumul">—</div></div>
       <div class="stat-card"><div class="stat-label">Leo 收入</div><div class="stat-value" style="color:var(--accent2)" id="fam-leo-income">—</div></div>
       <div class="stat-card"><div class="stat-label">小恩 收入</div><div class="stat-value" style="color:var(--green)" id="fam-xiao-income">—</div></div>
@@ -587,7 +612,7 @@ tr:hover td{background:var(--bg3)}
     </div>
     <div class="four-grid">
       <div class="chart-card">
-        <div class="chart-title">每月家庭支出趨勢</div>
+        <div class="chart-title">每月家庭收支趨勢</div>
         <div class="chart-wrap"><canvas id="fam-trend"></canvas></div>
       </div>
       <div class="chart-card">
@@ -616,6 +641,13 @@ tr:hover td{background:var(--bg3)}
           <span id="fam-settle-amount"></span>
         </div>
       </div>
+    </div>
+    <div class="chart-title" style="margin:4px 0 10px">年度視角 <span id="fam-ytd-range" style="font-size:12px;color:var(--muted);font-weight:400"></span></div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">年度累計收入</div><div class="stat-value" style="color:var(--green)" id="fam-ytd-income">—</div><div class="stat-sub" id="fam-ytd-income-yoy"></div></div>
+      <div class="stat-card"><div class="stat-label">年度累計支出</div><div class="stat-value" style="color:var(--red)" id="fam-ytd-expense">—</div><div class="stat-sub" id="fam-ytd-expense-yoy"></div></div>
+      <div class="stat-card"><div class="stat-label">年度累計結餘</div><div class="stat-value" id="fam-ytd-balance">—</div><div class="stat-sub" id="fam-ytd-savings"></div></div>
+      <div class="stat-card"><div class="stat-label">月均支出</div><div class="stat-value" id="fam-ytd-avg">—</div><div class="stat-sub" id="fam-ytd-months"></div></div>
     </div>
     <div class="table-card">
       <div class="table-header"><div class="table-title">完整明細</div></div>
@@ -680,8 +712,9 @@ tr:hover td{background:var(--bg3)}
       <button class="filter-btn" onclick="setRecurringFilter('共同',this)">共同</button>
     </div>
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-label">每月固定支出合計（啟用中）</div><div class="stat-value gold" id="rec-total">—</div></div>
+      <div class="stat-card"><div class="stat-label">每月固定支出合計（啟用中）</div><div class="stat-value gold" id="rec-total">—</div><div class="stat-sub">年繳／季繳已按月攤提</div></div>
       <div class="stat-card"><div class="stat-label">啟用中筆數</div><div class="stat-value" id="rec-count">—</div></div>
+      <div class="stat-card"><div class="stat-label">固定支出佔家庭收入</div><div class="stat-value" id="rec-ratio">—</div><div class="stat-sub" id="rec-ratio-sub">—</div></div>
     </div>
     <div class="table-card">
       <div class="table-header">
@@ -692,7 +725,7 @@ tr:hover td{background:var(--bg3)}
       </div>
       <div class="table-scroll">
         <table>
-          <thead><tr><th>扣款日</th><th>項目</th><th>類別</th><th>成員</th><th>付款人</th><th style="text-align:right">金額</th><th>狀態</th></tr></thead>
+          <thead><tr><th>扣款日</th><th>項目</th><th>類別</th><th>成員</th><th>付款人</th><th style="text-align:right">金額</th><th>狀態</th><th>本月</th></tr></thead>
           <tbody id="rec-table"></tbody>
         </table>
       </div>
@@ -706,10 +739,12 @@ tr:hover td{background:var(--bg3)}
 const NOTION_PROXY_URL = "https://accounting-dashboard-dusky.vercel.app/api/expenses";
 const NOTION_INCOME_PROXY_URL = "https://accounting-dashboard-dusky.vercel.app/api/income";
 const NOTION_RECURRING_PROXY_URL = "https://accounting-dashboard-dusky.vercel.app/api/recurring";
+const NOTION_BUDGET_PROXY_URL = "https://accounting-dashboard-dusky.vercel.app/api/budget";
 let SYNC_TIME = "—";
 let EXPENSES = [];
 let INCOME = [];
 let RECURRING = [];
+let BUDGET = [];
 // ─────────────────────────────────────────────────────────────
 
 const CAT_COLORS = {
@@ -763,15 +798,40 @@ function getMonthOptions(){
   return getFullYearMonths().filter(m => m <= todayMonth);
 }
 
+// 週期換算：每季/每年金額攤提成每月
+function monthlyAmortized(r){
+  if(r.cycle === "每年") return r.amount / 12;
+  if(r.cycle === "每季") return r.amount / 3;
+  return r.amount;
+}
+
+// 指定週期是否在該月（monthIdx 為 0-11）扣款
+function isDueInMonth(r, monthIdx){
+  if(r.cycle === "每年") return monthIdx === ((r.dueMonth || 1) - 1);
+  if(r.cycle === "每季") return monthIdx % 3 === ((r.dueMonth || 1) - 1) % 3;
+  return true;
+}
+
+// 下一次扣款日（含每季/每年週期）
+function nextDueDate(r, today){
+  const mk = (y,m)=>{ const d = new Date(y, m, r.dueDay); d.setHours(0,0,0,0); return d; };
+  const y = today.getFullYear(), m = today.getMonth();
+  for(let i=0; i<=12; i++){
+    if(!isDueInMonth(r, (m+i) % 12)) continue;
+    const due = mk(y, m+i);
+    if(due >= today) return due;
+  }
+  return null;
+}
+
 function getUpcomingBills(){
   const today = new Date(); today.setHours(0,0,0,0);
   return RECURRING.filter(r=>r.active && r.dueDay).map(r=>{
-    let due = new Date(today.getFullYear(), today.getMonth(), r.dueDay);
-    due.setHours(0,0,0,0);
-    if(due < today) due = new Date(today.getFullYear(), today.getMonth()+1, r.dueDay);
+    const due = nextDueDate(r, today);
+    if(!due) return null;
     const daysLeft = Math.round((due-today)/86400000);
     return {...r, dueDate:due, daysLeft};
-  }).filter(r=>r.daysLeft>=0 && r.daysLeft<=10).sort((a,b)=>a.daysLeft-b.daysLeft);
+  }).filter(r=>r && r.daysLeft>=0 && r.daysLeft<=10).sort((a,b)=>a.daysLeft-b.daysLeft);
 }
 
 function filterByMonth(month){ return EXPENSES.filter(e => e.date.startsWith(month)); }
@@ -787,6 +847,14 @@ async function fetchExpenses(){
 
 async function fetchIncome(){
   const resp = await fetch(NOTION_INCOME_PROXY_URL, { cache: "no-store" });
+  if(!resp.ok) throw new Error("HTTP " + resp.status);
+  const data = await resp.json();
+  if(data.error) throw new Error(data.error);
+  return data;
+}
+
+async function fetchBudget(){
+  const resp = await fetch(NOTION_BUDGET_PROXY_URL, { cache: "no-store" });
   if(!resp.ok) throw new Error("HTTP " + resp.status);
   const data = await resp.json();
   if(data.error) throw new Error(data.error);
@@ -814,7 +882,7 @@ async function refreshData(){
   btn.disabled = true;
   btn.textContent = "🔄 更新中...";
   try{
-    const [expResult, incResult, recResult] = await Promise.allSettled([fetchExpenses(), fetchIncome(), fetchRecurring()]);
+    const [expResult, incResult, recResult, budResult] = await Promise.allSettled([fetchExpenses(), fetchIncome(), fetchRecurring(), fetchBudget()]);
     if(expResult.status === "rejected") throw expResult.reason;
     const data = expResult.value;
     EXPENSES = data.expenses || [];
@@ -833,6 +901,13 @@ async function refreshData(){
     } else {
       RECURRING = [];
       console.warn("固定支出資料同步失敗（可能尚未設定 NOTION_RECURRING_DB_ID）:", recResult.reason);
+    }
+
+    if(budResult.status === "fulfilled"){
+      BUDGET = budResult.value.budgets || [];
+    } else {
+      BUDGET = [];
+      console.warn("預算資料同步失敗（可能尚未設定 NOTION_BUDGET_DB_ID）:", budResult.reason);
     }
 
     const monthOptions = getMonthOptions();
@@ -923,6 +998,35 @@ function renderOverview(){
   document.getElementById("ov-leo").textContent = fmt(leo);
   document.getElementById("ov-xiao").textContent = fmt(xiao);
   document.getElementById("ov-joint").textContent = fmt(joint);
+
+  // 本月預算執行（需在 Notion「預算設定」建立「總預算」）
+  const totalBudget = BUDGET.find(b=>b.name==="總預算");
+  const budSub = document.getElementById("ov-budget-sub");
+  if(totalBudget){
+    const pct = Math.round(total/totalBudget.amount*100);
+    const color = pct>100 ? "var(--red)" : pct>=80 ? "var(--accent)" : "var(--green)";
+    budSub.style.display = "";
+    budSub.innerHTML = `預算執行 <span style="color:${color};font-weight:600">${pct}%</span>／${fmt(totalBudget.amount)}`;
+  } else {
+    budSub.style.display = "none";
+  }
+
+  // 未結清共同支出帳齡提醒（超過 30 天）
+  const unsettled = EXPENSES.filter(e=>e.person==="共同" && !e.settled);
+  const alertEl = document.getElementById("settle-alert");
+  let alertHtml = "";
+  if(unsettled.length){
+    const oldest = unsettled.reduce((min,e)=>e.date<min?e.date:min, unsettled[0].date);
+    const todayMid = new Date(); todayMid.setHours(0,0,0,0);
+    const ageDays = Math.floor((todayMid - new Date(oldest+"T00:00:00")) / 86400000);
+    if(ageDays > 30){
+      const unsettledTotal = unsettled.reduce((s,e)=>s+e.amount,0);
+      const settle = settleUp(unsettled);
+      const settleNote = settle.owe ? `，${settle.text} ${fmt(settle.amount)}` : "";
+      alertHtml = `<div class="alert-banner" onclick="showPage('joint')"><span>⚠️ 共同支出已 ${ageDays} 天未結算，未結清合計 ${fmt(unsettledTotal)}${settleNote}</span><span class="alert-link">前往共同財報 →</span></div>`;
+    }
+  }
+  alertEl.innerHTML = alertHtml;
 
   if(trendView === "person"){
     renderTrendByPerson();
@@ -1066,6 +1170,36 @@ function renderBudget(){
   document.getElementById("bud-joint").textContent = fmt(joint);
   document.getElementById("person-donut-total").textContent = fmt(total);
 
+  // 預算執行進度條
+  const budCard = document.getElementById("budget-exec-card");
+  if(BUDGET.length){
+    const catSpent = {};
+    data.forEach(e=>{ catSpent[e.category]=(catSpent[e.category]||0)+e.amount; });
+    const mkRow = (name, spent, budget) => {
+      const pct = Math.round(spent/budget*100);
+      const color = pct>100 ? "var(--red)" : pct>=80 ? "var(--accent)" : "var(--green)";
+      const over = pct>100 ? `　<span style="color:var(--red)">超支 ${fmt(spent-budget)}</span>` : "";
+      return `<div class="bud-bar-row">
+        <div class="bud-bar-top">
+          <span class="bud-bar-name">${esc(name)}</span>
+          <span class="bud-bar-nums">${fmt(spent)} / ${fmt(budget)}　<span style="color:${color};font-weight:700">${pct}%</span>${over}</span>
+        </div>
+        <div class="bud-bar-track"><div class="bud-bar-fill" style="width:${Math.min(pct,100)}%;background:${color}"></div></div>
+      </div>`;
+    };
+    const rows = [];
+    const totalBudget = BUDGET.find(b=>b.name==="總預算");
+    if(totalBudget) rows.push(mkRow("總預算", total, totalBudget.amount));
+    BUDGET.filter(b=>b.name!=="總預算")
+      .map(b=>({...b, spent: catSpent[b.name]||0}))
+      .sort((a,b)=> b.spent/b.amount - a.spent/a.amount)
+      .forEach(b=> rows.push(mkRow(b.name, b.spent, b.amount)));
+    document.getElementById("budget-bars").innerHTML = rows.join("");
+    budCard.style.display = "";
+  } else {
+    budCard.style.display = "none";
+  }
+
   // Category bar chart
   const catMap = {};
   data.forEach(e=>{ catMap[e.category]=(catMap[e.category]||0)+e.amount; });
@@ -1147,6 +1281,8 @@ function renderPersonReport(person){
   const balEl = document.getElementById(prefix+"-balance");
   balEl.textContent = balanceDisplay(balance);
   balEl.setAttribute("style", balanceStyle(balance));
+  document.getElementById(prefix+"-savings").textContent =
+    income>0 ? "儲蓄率 " + Math.round(balance/income*100) + "%" : "本月無收入";
 
   document.getElementById(prefix+"-count").textContent = expAll.length + " 筆";
   const maxAmt = expAll.length ? Math.max(...expAll.map(e=>e.amount)) : 0;
@@ -1163,14 +1299,24 @@ function renderPersonReport(person){
   cumulEl.setAttribute("style", balanceStyle(cumulBalance));
 
   const months = getFullYearMonths();
-  const trendData = months.map(m=>filterByMonth(m).filter(e=>e.person===person).reduce((s,e)=>s+e.amount,0));
+  const trendExp = months.map(m=>{
+    const all = filterByMonth(m);
+    const own = all.filter(e=>e.person===person).reduce((s,e)=>s+e.amount,0);
+    const jointHalfM = all.filter(e=>e.person==="共同").reduce((s,e)=>s+e.amount,0)/2;
+    return own + jointHalfM;
+  });
+  const trendInc = months.map(m=>INCOME.filter(i=>i.person===person && i.date.startsWith(m)).reduce((s,i)=>s+i.amount,0));
   const trendColor = isLeo ? "#0ea5e9" : "#22c55e";
   if(isLeo){ if(leoTrendChartInst) leoTrendChartInst.destroy(); }
   else { if(xiaoTrendChartInst) xiaoTrendChartInst.destroy(); }
   const trendChart = new Chart(document.getElementById(prefix+"-trend"), {
     type:"bar",
-    data:{labels:months.map(m=>m.replace("-","/")), datasets:[{data:trendData, backgroundColor:trendColor, borderRadius:6, barThickness:40}]},
-    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+    data:{labels:months.map(m=>m.replace("-","/")), datasets:[
+      {type:"line", label:"收入", data:trendInc, borderColor:"#3b8a5e", backgroundColor:"rgba(59,138,94,.1)", tension:.4, pointRadius:3, borderWidth:2},
+      {type:"bar", label:"支出（含共同分攤）", data:trendExp, backgroundColor:trendColor, borderRadius:6, barThickness:26}
+    ]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:true, labels:{color:CHART_TICK, boxWidth:12, font:{size:11}}}},
       scales:{x:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK}}, y:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,callback:v=>"NT$"+v.toLocaleString()}}}}
   });
   if(isLeo) leoTrendChartInst = trendChart; else xiaoTrendChartInst = trendChart;
@@ -1280,6 +1426,8 @@ function renderFamilyReport(){
   const balEl = document.getElementById("fam-balance");
   balEl.textContent = balanceDisplay(balance);
   balEl.setAttribute("style", balanceStyle(balance));
+  document.getElementById("fam-savings").textContent =
+    totalInc>0 ? "儲蓄率 " + Math.round(balance/totalInc*100) + "%" : "本月無收入";
 
   const cumul = familyBalance(EXPENSES, INCOME);
   const cumulEl = document.getElementById("fam-cumul");
@@ -1298,12 +1446,17 @@ function renderFamilyReport(){
   document.getElementById("fam-joint").textContent = fmt(jointExp);
 
   const months = getFullYearMonths();
-  const trendData = months.map(m=>filterByMonth(m).reduce((s,e)=>s+e.amount,0));
+  const trendExp = months.map(m=>filterByMonth(m).reduce((s,e)=>s+e.amount,0));
+  const trendInc = months.map(m=>INCOME.filter(i=>i.date.startsWith(m)).reduce((s,i)=>s+i.amount,0));
   if(famTrendChartInst) famTrendChartInst.destroy();
   famTrendChartInst = new Chart(document.getElementById("fam-trend"), {
     type:"line",
-    data:{labels:months.map(m=>m.replace("-","/")), datasets:[{data:trendData, borderColor:"#9C8140", backgroundColor:"rgba(156,129,64,.12)", fill:true, tension:.4, pointRadius:3, borderWidth:2}]},
-    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+    data:{labels:months.map(m=>m.replace("-","/")), datasets:[
+      {label:"收入", data:trendInc, borderColor:"#3b8a5e", backgroundColor:"rgba(59,138,94,.08)", fill:true, tension:.4, pointRadius:3, borderWidth:2},
+      {label:"支出", data:trendExp, borderColor:"#9C8140", backgroundColor:"rgba(156,129,64,.12)", fill:true, tension:.4, pointRadius:3, borderWidth:2}
+    ]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:true, labels:{color:CHART_TICK, boxWidth:12, font:{size:11}}}},
       scales:{x:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK}}, y:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,callback:v=>"NT$"+v.toLocaleString()}}}}
   });
 
@@ -1343,6 +1496,34 @@ function renderFamilyReport(){
   document.getElementById("fam-settle-text").textContent = settle.text;
   document.getElementById("fam-settle-amount").textContent = fmt(settle.amount);
   document.getElementById("fam-settle-result").className = "settle-result" + (settle.owe?" owe":"");
+
+  // 年度視角（依所選月份的年度；當年只算到當月，去年同期比較用同一區間）
+  const year = currentMonth ? currentMonth.slice(0,4) : String(new Date().getFullYear());
+  const now = new Date();
+  const cutoffMonth = year === String(now.getFullYear()) ? now.getMonth()+1 : 12;
+  const inYtd = (d, y) => d.startsWith(y) && Number(d.slice(5,7)) <= cutoffMonth;
+  const ytdExp = EXPENSES.filter(e=>inYtd(e.date, year)).reduce((s,e)=>s+e.amount,0);
+  const ytdInc = INCOME.filter(i=>inYtd(i.date, year)).reduce((s,i)=>s+i.amount,0);
+  const ytdBal = ytdInc - ytdExp;
+  const prevYear = String(Number(year)-1);
+  const prevExp = EXPENSES.filter(e=>inYtd(e.date, prevYear)).reduce((s,e)=>s+e.amount,0);
+  const prevInc = INCOME.filter(i=>inYtd(i.date, prevYear)).reduce((s,i)=>s+i.amount,0);
+
+  document.getElementById("fam-ytd-range").textContent = `${year} 年 1–${cutoffMonth} 月`;
+  document.getElementById("fam-ytd-income").textContent = fmt(ytdInc);
+  document.getElementById("fam-ytd-expense").textContent = fmt(ytdExp);
+  const ytdBalEl = document.getElementById("fam-ytd-balance");
+  ytdBalEl.textContent = balanceDisplay(ytdBal);
+  ytdBalEl.setAttribute("style", balanceStyle(ytdBal));
+  document.getElementById("fam-ytd-savings").textContent =
+    ytdInc>0 ? "儲蓄率 " + Math.round(ytdBal/ytdInc*100) + "%" : "";
+  document.getElementById("fam-ytd-avg").textContent = fmt(ytdExp/cutoffMonth);
+  document.getElementById("fam-ytd-months").textContent = `以 ${cutoffMonth} 個月平均`;
+  const yoy = (cur, prev) => prev>0
+    ? `較去年同期 ${cur>=prev?"+":""}${Math.round((cur-prev)/prev*100)}%`
+    : "去年同期無資料";
+  document.getElementById("fam-ytd-income-yoy").textContent = yoy(ytdInc, prevInc);
+  document.getElementById("fam-ytd-expense-yoy").textContent = yoy(ytdExp, prevExp);
 
   const rows = [...exp].sort((a,b)=>b.date.localeCompare(a.date)).map(e=>{
     const personBadge = e.person==="Leo"?"badge-leo":e.person==="小恩"?"badge-xiao":"badge-joint";
@@ -1454,23 +1635,65 @@ function renderRecurring(){
   if(activeOnly) rows = rows.filter(r=>r.active);
 
   const activeRows = recurringFilter==="all" ? RECURRING.filter(r=>r.active) : RECURRING.filter(r=>r.person===recurringFilter && r.active);
-  const total = activeRows.reduce((s,r)=>s+r.amount,0);
+  const total = activeRows.reduce((s,r)=>s+monthlyAmortized(r),0);
   document.getElementById("rec-total").textContent = fmt(total);
   document.getElementById("rec-count").textContent = activeRows.length + " 筆";
 
+  // 固定成本比率：全部啟用中（攤提後）÷ 本月家庭收入，警戒線 50%
+  const nowMonth = new Date().toISOString().slice(0,7);
+  const monthIncome = INCOME.filter(i=>i.date.startsWith(nowMonth)).reduce((s,i)=>s+i.amount,0);
+  const allActiveTotal = RECURRING.filter(r=>r.active).reduce((s,r)=>s+monthlyAmortized(r),0);
+  const ratioEl = document.getElementById("rec-ratio");
+  if(monthIncome > 0){
+    const pct = Math.round(allActiveTotal/monthIncome*100);
+    ratioEl.textContent = pct + "%";
+    ratioEl.setAttribute("style", pct>50 ? "color:var(--red)" : "color:var(--green)");
+    document.getElementById("rec-ratio-sub").textContent = `本月收入 ${fmt(monthIncome)}，警戒線 50%`;
+  } else {
+    ratioEl.textContent = "—";
+    ratioEl.removeAttribute("style");
+    document.getElementById("rec-ratio-sub").textContent = "本月尚無收入記錄";
+  }
+
+  const nowIdx = new Date().getMonth();
   const sorted = [...rows].sort((a,b)=>(a.dueDay||99)-(b.dueDay||99));
   document.getElementById("rec-table").innerHTML = sorted.map(r=>{
     const personBadge = r.person==="Leo"?"badge-leo":r.person==="小恩"?"badge-xiao":"badge-joint";
     const payerBadge = r.payer==="Leo"?"badge-leo":"badge-xiao";
+
+    let dueText;
+    if(r.cycle==="每年"){
+      dueText = `每年 ${r.dueMonth||1} 月 ${r.dueDay ?? "—"} 號`;
+    } else if(r.cycle==="每季"){
+      const rem = ((r.dueMonth||1)-1)%3;
+      dueText = `每季 ${r.dueDay ?? "—"} 號（${[rem+1,rem+4,rem+7,rem+10].join("/")}月）`;
+    } else {
+      dueText = `每月 ${r.dueDay ?? "—"} 號`;
+    }
+    const amortNote = r.cycle && r.cycle!=="每月"
+      ? `<div style="font-size:11px;color:var(--muted)">攤提 ${fmt(monthlyAmortized(r))}/月</div>` : "";
+
+    // 本月入帳狀態：比對記帳管理當月是否已有同名記錄
+    let monthCell;
+    if(!r.active){
+      monthCell = `<span style="color:var(--muted)">—</span>`;
+    } else if(!isDueInMonth(r, nowIdx)){
+      monthCell = `<span style="color:var(--muted);font-size:11px">本月無扣款</span>`;
+    } else {
+      const paid = EXPENSES.some(e=>e.date.startsWith(nowMonth) && e.name.trim()===r.name.trim());
+      monthCell = paid ? `<span class="badge badge-paid">✓ 已入帳</span>` : `<span class="badge badge-pending">待入帳</span>`;
+    }
+
     return `
       <tr>
-        <td data-label="扣款日" style="color:var(--muted)">每月 ${r.dueDay ?? "—"} 號</td>
+        <td data-label="扣款日" style="color:var(--muted)">${dueText}</td>
         <td data-label="項目">${esc(r.name)}</td>
         <td data-label="類別"><span class="badge cat-${r.category}">${r.category}</span></td>
         <td data-label="成員"><span class="badge ${personBadge}">${r.person}</span></td>
         <td data-label="付款人"><span class="badge ${payerBadge}">${r.payer||"—"}</span></td>
-        <td data-label="金額" style="text-align:right" class="amount">${fmt(r.amount)}</td>
+        <td data-label="金額" style="text-align:right" class="amount">${fmt(r.amount)}${amortNote}</td>
         <td data-label="狀態">${r.active ? '<span class="badge badge-active">啟用中</span>' : '<span class="badge badge-inactive">已停用</span>'}</td>
+        <td data-label="本月">${monthCell}</td>
       </tr>
     `;
   }).join("");

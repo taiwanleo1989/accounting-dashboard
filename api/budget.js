@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     let cursor;
     do {
       const resp = await fetch(
-        `https://api.notion.com/v1/databases/${process.env.NOTION_RECURRING_DB_ID}/query`,
+        `https://api.notion.com/v1/databases/${process.env.NOTION_BUDGET_DB_ID}/query`,
         {
           method: "POST",
           headers: {
@@ -24,7 +24,6 @@ export default async function handler(req, res) {
           body: JSON.stringify({
             start_cursor: cursor,
             page_size: 100,
-            sorts: [{ property: "每月扣款日", direction: "ascending" }],
           }),
         }
       );
@@ -40,26 +39,18 @@ export default async function handler(req, res) {
       cursor = data.has_more ? data.next_cursor : undefined;
     } while (cursor);
 
-    const recurring = results
+    const budgets = results
       .map((page) => {
         const p = page.properties;
         return {
           name: p["名稱"]?.title?.[0]?.plain_text || "",
           amount: p["金額"]?.number || 0,
-          person: p["成員"]?.select?.name || "",
-          payer: p["付款人"]?.select?.name || "",
-          category: p["類別"]?.select?.name || "其他",
-          dueDay: p["每月扣款日"]?.number || null,
-          cycle: p["週期"]?.select?.name || "每月",
-          dueMonth: p["扣款月份"]?.number || null,
-          reminderDays: p["提前提醒天數"]?.number ?? 3,
-          active: p["啟用中"]?.checkbox ?? true,
           note: p["備註"]?.rich_text?.[0]?.plain_text || "",
         };
       })
-      .filter((r) => r.name);
+      .filter((b) => b.name && b.amount > 0);
 
-    res.status(200).json({ syncTime: new Date().toISOString(), recurring });
+    res.status(200).json({ syncTime: new Date().toISOString(), budgets });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
