@@ -65,10 +65,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .stat-card.blue{background:#E4F0F5}
 .stat-card.blue .stat-label{color:#6B98AC}
 .stat-card.blue .stat-value{color:#365A6B}
+.stat-card.green{background:#E7F3E3}
+.stat-card.green .stat-label{color:#6F9C5B}
+.stat-card.green .stat-value{color:#33552A}
+.stat-card.coral{background:#FBE9E6}
+.stat-card.coral .stat-label{color:#C08872}
+.stat-card.coral .stat-value{color:#7A3E2C}
+/* Rich color cycling for stat rows so pages don't read as one flat hue */
+.stats-row .stat-card:nth-child(4n+1){background:#FBF1DD}
+.stats-row .stat-card:nth-child(4n+1) .stat-label{color:#B79A5C}
+.stats-row .stat-card:nth-child(4n+1) .stat-value{color:#6E5A26}
+.stats-row .stat-card:nth-child(4n+2){background:#E4F0F5}
+.stats-row .stat-card:nth-child(4n+2) .stat-label{color:#6B98AC}
+.stats-row .stat-card:nth-child(4n+2) .stat-value{color:#365A6B}
+.stats-row .stat-card:nth-child(4n+3){background:#E7F3E3}
+.stats-row .stat-card:nth-child(4n+3) .stat-label{color:#6F9C5B}
+.stats-row .stat-card:nth-child(4n+3) .stat-value{color:#33552A}
+.stats-row .stat-card:nth-child(4n+4){background:#FBE9E6}
+.stats-row .stat-card:nth-child(4n+4) .stat-label{color:#C08872}
+.stats-row .stat-card:nth-child(4n+4) .stat-value{color:#7A3E2C}
 .stat-label{font-size:11px;color:var(--muted);margin-bottom:6px}
 .stat-value{font-size:15px;font-weight:700;color:var(--text)}
-.stat-value.accent{color:var(--accent)}
-.stat-value.gold{color:var(--gold)}
+.stat-value.accent{color:var(--accent)!important}
+.stat-value.gold{color:var(--gold)!important}
 .stat-delta{font-size:11px;margin-top:4px}
 .stat-delta.up{color:var(--red)}
 .stat-delta.down{color:var(--green)}
@@ -169,18 +188,21 @@ tr:hover td{background:var(--bg3)}
 @media(max-width:640px){
   .sidebar{display:none}
   .main{margin-left:0;padding:16px;padding-bottom:76px}
-  .stats-row{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:repeat(3,1fr);gap:8px}
+  .stat-card{padding:10px 8px}
+  .stat-label{font-size:10px;margin-bottom:4px}
+  .stat-value{font-size:13px}
   .charts-row,.charts-row.split-even{grid-template-columns:1fr}
   .overview-layout{grid-template-columns:1fr}
   .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:56px;background:#fff;border-top:1px solid var(--border);z-index:50;align-items:stretch}
-  .table-card table,.table-card thead,.table-card tbody,.table-card th,.table-card td,.table-card tr{display:block}
+  .table-card table,.table-card thead,.table-card tbody,.table-card th{display:block}
   .table-card thead tr{display:none}
-  .table-card tbody tr{border:1px solid var(--border);border-radius:10px;margin-bottom:10px;padding:8px 12px}
-  .table-card tbody tr.group-row{border:none;padding:4px 0 4px 4px;margin-bottom:4px}
-  .table-card td{border:none!important;padding:4px 0;display:flex;justify-content:space-between;align-items:center}
-  .table-card td::before{content:attr(data-label);color:var(--muted);font-size:11px;font-weight:500;margin-right:8px}
-  .table-card tr.group-row td::before{display:none}
-  .table-card tr.group-row td{display:block}
+  .table-card tbody tr{display:flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;padding:8px 10px;overflow-x:auto;white-space:nowrap}
+  .table-card tbody tr.group-row{border:none;padding:4px 0 4px 4px;margin-bottom:4px;white-space:normal}
+  .table-card td{border:none!important;padding:0;display:inline-flex;align-items:center;flex-shrink:0}
+  .table-card td:last-child{margin-left:auto;padding-left:8px}
+  .table-card td::before{content:none}
+  .table-card tr.group-row td{display:block;width:100%}
 }
 </style>
 </head>
@@ -293,44 +315,16 @@ tr:hover td{background:var(--bg3)}
     </div>
 
     <div class="overview-layout">
-      <div class="overview-main">
-        <div class="charts-row">
-          <div class="chart-card">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-              <div class="chart-title">月度支出趨勢</div>
-              <div class="toggle-group">
-                <button class="toggle-btn active" onclick="setTrendView('month',this)">月度</button>
-                <button class="toggle-btn" onclick="setTrendView('person',this)">成員</button>
-              </div>
-            </div>
-            <div class="chart-sub">點擊柱狀圖查看明細</div>
-            <div class="chart-wrap"><canvas id="trendChart" role="img" aria-label="月度支出趨勢"></canvas></div>
-          </div>
-          <div class="chart-card">
-            <div class="chart-title">分類佔比</div>
-            <div class="legend" id="cat-legend"></div>
-            <div class="donut-wrap">
-              <div class="chart-wrap"><canvas id="catChart" role="img" aria-label="分類支出圓餅圖"></canvas></div>
-              <div class="donut-center">
-                <div class="donut-total" id="donut-total">—</div>
-                <div class="donut-label">總計</div>
-              </div>
-            </div>
+      <div class="chart-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div class="chart-title">月度支出趨勢</div>
+          <div class="toggle-group">
+            <button class="toggle-btn active" onclick="setTrendView('month',this)">月度</button>
+            <button class="toggle-btn" onclick="setTrendView('person',this)">成員</button>
           </div>
         </div>
-
-        <div class="table-card">
-          <div class="table-header">
-            <div class="table-title">最新消費</div>
-            <span style="font-size:12px;color:var(--muted)">最近 10 筆</span>
-          </div>
-          <div class="table-scroll">
-            <table>
-              <thead><tr><th>日期</th><th>項目</th><th>類別</th><th>成員</th><th style="text-align:right">金額</th></tr></thead>
-              <tbody id="recent-table"></tbody>
-            </table>
-          </div>
-        </div>
+        <div class="chart-sub" id="trend-sub">曲線顯示每月支出變化</div>
+        <div class="chart-wrap"><canvas id="trendChart" role="img" aria-label="月度支出趨勢"></canvas></div>
       </div>
 
       <div class="table-card" id="upcoming-bills-card">
@@ -339,6 +333,19 @@ tr:hover td{background:var(--bg3)}
           <span style="font-size:12px;color:var(--muted)">10 天內</span>
         </div>
         <div id="upcoming-bills-list"></div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">最新消費</div>
+        <span style="font-size:12px;color:var(--muted)">最近 10 筆</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>日期</th><th>項目</th><th>類別</th><th>成員</th><th style="text-align:right">金額</th></tr></thead>
+          <tbody id="recent-table"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -889,56 +896,12 @@ function renderOverview(){
   document.getElementById("ov-leo").textContent = fmt(leo);
   document.getElementById("ov-xiao").textContent = fmt(xiao);
   document.getElementById("ov-joint").textContent = fmt(joint);
-  document.getElementById("donut-total").textContent = fmt(total);
 
-  // Trend chart (Jan-Dec of current year, missing months = 0)
-  const months = getFullYearMonths();
-  const monthTotals = months.map(m => filterByMonth(m).reduce((s,e)=>s+e.amount,0));
-
-  if(trendChartInst) trendChartInst.destroy();
-  trendChartInst = new Chart(document.getElementById("trendChart"), {
-    type:"bar",
-    data:{
-      labels: months.map(m => m.replace("-","/")),
-      datasets:[{
-        label:"總支出",
-        data: monthTotals,
-        backgroundColor: months.map((_,i)=> i%2===0 ? "#A9CEDC" : "#F0DBA3"),
-        borderRadius:6,
-        barThickness:40
-      }]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,font:{size:12}}},
-        y:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,font:{size:11},callback:v=>"NT$"+v.toLocaleString()}}
-      }
-    }
-  });
-
-  // Category donut
-  const catMap = {};
-  data.forEach(e=>{ catMap[e.category]=(catMap[e.category]||0)+e.amount; });
-  const cats = Object.keys(catMap);
-  const catAmounts = cats.map(c=>catMap[c]);
-  const catColors = cats.map(c=>CAT_COLORS[c]||"#888");
-
-  const legend = document.getElementById("cat-legend");
-  legend.innerHTML = cats.map((c,i)=>
-    `<div class="legend-item"><div class="legend-dot" style="background:${catColors[i]}"></div>${c} ${Math.round(catAmounts[i]/total*100)}%</div>`
-  ).join("");
-
-  if(catChartInst) catChartInst.destroy();
-  catChartInst = new Chart(document.getElementById("catChart"),{
-    type:"doughnut",
-    data:{labels:cats, datasets:[{data:catAmounts, backgroundColor:catColors, borderWidth:0, hoverBorderWidth:0}]},
-    options:{
-      responsive:true, maintainAspectRatio:false, cutout:"70%",
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`NT$${ctx.parsed.toLocaleString()}`}}}
-    }
-  });
+  if(trendView === "person"){
+    renderTrendByPerson();
+  } else {
+    renderTrendByMonth();
+  }
 
   // Recent table
   const sorted = [...data].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
@@ -986,31 +949,55 @@ function setTrendView(view, btn){
   trendView = view;
   document.querySelectorAll(".toggle-btn").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
+  document.getElementById("trend-sub").textContent = view==="person" ? "各成員本月支出佔比" : "曲線顯示每月支出變化";
+  if(view === "person") renderTrendByPerson();
+  else renderTrendByMonth();
+}
 
-  if(view === "person"){
-    const data = filterByMonth(currentMonth);
-    const persons = ["Leo","小恩","共同"];
-    const totals = persons.map(p=>data.filter(e=>e.person===p).reduce((s,e)=>s+e.amount,0));
-    if(trendChartInst) trendChartInst.destroy();
-    trendChartInst = new Chart(document.getElementById("trendChart"),{
-      type:"bar",
-      data:{labels:persons, datasets:[{
-        data:totals,
-        backgroundColor:persons.map(p=>PERSON_COLORS[p]),
-        borderRadius:6, barThickness:50
-      }]},
-      options:{
-        responsive:true, maintainAspectRatio:false,
-        plugins:{legend:{display:false}},
-        scales:{
-          x:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK}},
-          y:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,callback:v=>"NT$"+v.toLocaleString()}}
-        }
+function renderTrendByMonth(){
+  const months = getFullYearMonths();
+  const monthTotals = months.map(m => filterByMonth(m).reduce((s,e)=>s+e.amount,0));
+  if(trendChartInst) trendChartInst.destroy();
+  trendChartInst = new Chart(document.getElementById("trendChart"), {
+    type:"line",
+    data:{
+      labels: months.map(m => m.replace("-","/")),
+      datasets:[{
+        label:"總支出",
+        data: monthTotals,
+        borderColor:"#9C8140",
+        backgroundColor:"rgba(156,129,64,.12)",
+        fill:true, tension:.4, pointRadius:3, pointBackgroundColor:"#9C8140", borderWidth:2
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,font:{size:12}}},
+        y:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,font:{size:11},callback:v=>"NT$"+v.toLocaleString()}}
       }
-    });
-  } else {
-    renderOverview();
-  }
+    }
+  });
+}
+
+function renderTrendByPerson(){
+  const data = filterByMonth(currentMonth);
+  const persons = ["Leo","小恩","共同"];
+  const totals = persons.map(p=>data.filter(e=>e.person===p).reduce((s,e)=>s+e.amount,0));
+  if(trendChartInst) trendChartInst.destroy();
+  trendChartInst = new Chart(document.getElementById("trendChart"),{
+    type:"doughnut",
+    data:{labels:persons, datasets:[{
+      data:totals,
+      backgroundColor:persons.map(p=>PERSON_COLORS[p]),
+      borderWidth:0
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:"60%",
+      plugins:{legend:{position:"bottom",labels:{color:CHART_TICK,font:{size:12}}},tooltip:{callbacks:{label:ctx=>`NT$${ctx.parsed.toLocaleString()}`}}}
+    }
+  });
 }
 
 // ── 記帳管理 ─────────────────────────────────────────────────
