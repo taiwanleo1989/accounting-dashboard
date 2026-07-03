@@ -134,8 +134,7 @@ tr:hover td{background:var(--bg3)}
 .cat-其他{background:#F0F0EC;color:#7C7A70}
 /* Month selector */
 .month-bar{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-.month-btn{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:13px;cursor:pointer;transition:all .15s}
-.month-btn.active{border-color:var(--accent);color:var(--accent);background:#FBF1DD}
+.month-select{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#FBF1DD;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer}
 /* Person filter */
 .filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .filter-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s}
@@ -196,13 +195,21 @@ tr:hover td{background:var(--bg3)}
   .overview-layout{grid-template-columns:1fr}
   .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:56px;background:#fff;border-top:1px solid var(--border);z-index:50;align-items:stretch}
   .table-card table,.table-card thead,.table-card tbody,.table-card th{display:block}
-  .table-card thead tr{display:none}
+  .table-card thead tr{display:flex;gap:8px;padding:2px 10px 6px;font-size:10px;color:var(--muted);font-weight:600}
+  .table-card thead th{display:inline-flex;flex-shrink:0;padding:0;border:none}
   .table-card tbody tr{display:flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;padding:8px 10px;overflow-x:auto;white-space:nowrap}
   .table-card tbody tr.group-row{border:none;padding:4px 0 4px 4px;margin-bottom:4px;white-space:normal}
   .table-card td{border:none!important;padding:0;display:inline-flex;align-items:center;flex-shrink:0}
   .table-card td:last-child{margin-left:auto;padding-left:8px}
   .table-card td::before{content:none}
   .table-card tr.group-row td{display:block;width:100%}
+
+  /* 固定支出頁沿用舊版逐欄標籤堆疊樣式 */
+  #page-recurring .table-card thead tr{display:none}
+  #page-recurring .table-card tbody tr{display:block;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;padding:8px 12px;overflow-x:visible;white-space:normal}
+  #page-recurring .table-card td{display:flex;justify-content:space-between;align-items:center;padding:4px 0;width:auto}
+  #page-recurring .table-card td::before{content:attr(data-label);color:var(--muted);font-size:11px;font-weight:500;margin-right:8px}
+  #page-recurring .table-card td:last-child{margin-left:0;padding-left:0}
 }
 </style>
 </head>
@@ -375,8 +382,12 @@ tr:hover td{background:var(--bg3)}
         <div class="stat-value" id="bud-leo">—</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">小恩 / 共同</div>
-        <div class="stat-value" id="bud-others">—</div>
+        <div class="stat-label">小恩</div>
+        <div class="stat-value" id="bud-xiao">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">共同</div>
+        <div class="stat-value" id="bud-joint">—</div>
       </div>
     </div>
 
@@ -430,8 +441,6 @@ tr:hover td{background:var(--bg3)}
       <div class="stat-card"><div class="stat-label">個人支出</div><div class="stat-value" id="leo-expense">—</div></div>
       <div class="stat-card"><div class="stat-label">共同分攤</div><div class="stat-value gold" id="leo-jointhalf">—</div></div>
       <div class="stat-card"><div class="stat-label">本期結餘</div><div class="stat-value" id="leo-balance">—</div></div>
-    </div>
-    <div class="stats-row" style="margin-top:-6px">
       <div class="stat-card"><div class="stat-label">消費筆數</div><div class="stat-value" id="leo-count">—</div></div>
       <div class="stat-card"><div class="stat-label">最高單筆</div><div class="stat-value" id="leo-max">—</div></div>
       <div class="stat-card"><div class="stat-label">日均消費</div><div class="stat-value" id="leo-avg">—</div></div>
@@ -474,8 +483,6 @@ tr:hover td{background:var(--bg3)}
       <div class="stat-card"><div class="stat-label">個人支出</div><div class="stat-value" id="xiao-expense">—</div></div>
       <div class="stat-card"><div class="stat-label">共同分攤</div><div class="stat-value gold" id="xiao-jointhalf">—</div></div>
       <div class="stat-card"><div class="stat-label">本期結餘</div><div class="stat-value" id="xiao-balance">—</div></div>
-    </div>
-    <div class="stats-row" style="margin-top:-6px">
       <div class="stat-card"><div class="stat-label">消費筆數</div><div class="stat-value" id="xiao-count">—</div></div>
       <div class="stat-card"><div class="stat-label">最高單筆</div><div class="stat-value" id="xiao-max">—</div></div>
       <div class="stat-card"><div class="stat-label">日均消費</div><div class="stat-value" id="xiao-avg">—</div></div>
@@ -560,8 +567,6 @@ tr:hover td{background:var(--bg3)}
       <div class="stat-card"><div class="stat-label">家庭總支出</div><div class="stat-value" style="color:var(--red)" id="fam-expense">—</div></div>
       <div class="stat-card"><div class="stat-label">家庭結餘</div><div class="stat-value" id="fam-balance">—</div></div>
       <div class="stat-card"><div class="stat-label">累計結餘</div><div class="stat-value" id="fam-cumul">—</div></div>
-    </div>
-    <div class="stats-row" style="margin-top:-6px">
       <div class="stat-card"><div class="stat-label">Leo 收入</div><div class="stat-value" style="color:var(--accent2)" id="fam-leo-income">—</div></div>
       <div class="stat-card"><div class="stat-label">小恩 收入</div><div class="stat-value" style="color:var(--green)" id="fam-xiao-income">—</div></div>
       <div class="stat-card"><div class="stat-label">個人支出 Leo/小恩</div><div class="stat-value" style="font-size:15px" id="fam-personal">—</div></div>
@@ -816,8 +821,9 @@ async function refreshData(){
       console.warn("固定支出資料同步失敗（可能尚未設定 NOTION_RECURRING_DB_ID）:", recResult.reason);
     }
 
-    const months = getMonths();
-    if(!months.includes(currentMonth)) currentMonth = months[months.length - 1] || "";
+    const months = getFullYearMonths();
+    const todayMonth = new Date().toISOString().slice(0,7);
+    if(!currentMonth || !months.includes(currentMonth)) currentMonth = months.includes(todayMonth) ? todayMonth : months[months.length - 1];
     buildMonthBar(months);
     renderOverview();
     renderBudget();
@@ -853,21 +859,23 @@ function toggleMoreSheet(){
 function buildMonthBar(months){
   document.querySelectorAll(".month-bar").forEach(bar => {
     bar.innerHTML = "";
+    const select = document.createElement("select");
+    select.className = "month-select";
     months.forEach(m => {
-      const btn = document.createElement("button");
-      btn.className = "month-btn" + (m === currentMonth ? " active" : "");
-      btn.textContent = m.replace("-","年") + "月";
-      btn.onclick = () => onMonthChange(m);
-      bar.appendChild(btn);
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = m.replace("-","年") + "月";
+      if(m === currentMonth) opt.selected = true;
+      select.appendChild(opt);
     });
+    select.onchange = () => onMonthChange(select.value);
+    bar.appendChild(select);
   });
 }
 
 function onMonthChange(m){
   currentMonth = m;
-  document.querySelectorAll(".month-bar").forEach(bar => {
-    [...bar.children].forEach(b => b.classList.toggle("active", b.textContent === m.replace("-","年") + "月"));
-  });
+  document.querySelectorAll(".month-select").forEach(sel => { sel.value = m; });
   renderBudget();
   renderActivePage();
 }
@@ -987,15 +995,20 @@ function renderTrendByPerson(){
   const totals = persons.map(p=>data.filter(e=>e.person===p).reduce((s,e)=>s+e.amount,0));
   if(trendChartInst) trendChartInst.destroy();
   trendChartInst = new Chart(document.getElementById("trendChart"),{
-    type:"doughnut",
+    type:"bar",
     data:{labels:persons, datasets:[{
       data:totals,
       backgroundColor:persons.map(p=>PERSON_COLORS[p]),
-      borderWidth:0
+      borderRadius:6, barThickness:28
     }]},
     options:{
-      responsive:true, maintainAspectRatio:false, cutout:"60%",
-      plugins:{legend:{position:"bottom",labels:{color:CHART_TICK,font:{size:12}}},tooltip:{callbacks:{label:ctx=>`NT$${ctx.parsed.toLocaleString()}`}}}
+      indexAxis:"y",
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`NT$${ctx.parsed.x.toLocaleString()}`}}},
+      scales:{
+        x:{grid:{color:CHART_GRID},ticks:{color:CHART_TICK,callback:v=>"NT$"+v.toLocaleString()}},
+        y:{grid:{display:false},ticks:{color:CHART_TICK,font:{size:12}}}
+      }
     }
   });
 }
@@ -1013,7 +1026,8 @@ function renderBudget(){
   document.getElementById("bud-daily").textContent = fmt(total/days);
   document.getElementById("bud-count").textContent = data.length + " 筆消費";
   document.getElementById("bud-leo").textContent = fmt(leo);
-  document.getElementById("bud-others").textContent = fmt(xiao) + " / " + fmt(joint);
+  document.getElementById("bud-xiao").textContent = fmt(xiao);
+  document.getElementById("bud-joint").textContent = fmt(joint);
   document.getElementById("person-donut-total").textContent = fmt(total);
 
   // Category bar chart
